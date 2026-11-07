@@ -1,30 +1,411 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>botChat 演示页</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>botChat · 群聊式 Agent 任务编排</title>
+<meta name="description" content="botChat：左右分栏的群聊式 Agent 任务编排应用。你只说要什么，主 Agent 拆解并现场合成子 Agent 并行执行，再汇聚成一份结果。macOS 原生客户端。">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:#333}
-.card{background:#fff;border-radius:20px;max-width:640px;width:100%;padding:48px 40px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.25)}
-.badge{display:inline-block;background:#eef2ff;color:#4f46e5;font-size:13px;font-weight:600;padding:6px 16px;border-radius:999px;margin-bottom:20px}
-h1{font-size:32px;margin-bottom:12px;color:#111}
-p.desc{color:#666;line-height:1.8;margin:12px 0 28px}
-.features{display:flex;gap:12px;justify-content:center;margin-bottom:28px;flex-wrap:wrap}
-.features span{background:#f5f3ff;border:1px solid #e5e0ff;padding:8px 16px;border-radius:10px;font-size:14px}
-.btn{display:inline-block;background:linear-gradient(90deg,#667eea,#764ba2);color:#fff;text-decoration:none;padding:12px 36px;border-radius:12px;font-weight:600}
-footer{margin-top:24px;font-size:12px;color:#aaa}
+/* 1 tokens */
+:root{--paper:#FFFBF2;--paper-deep:#FFF8EB;--paper-edge:#EDE8DF;--card:#FFF;--card-warm:#FFFEFB;
+--line:#EDE6D8;--line-soft:#F2EDE2;--ink:#1A1D21;--ink-2:#5A5F66;--ink-3:#8B8B8B;
+--blue:#2F7CF6;--blue-soft:#EAF1FE;--amber:#C9972B;--amber-soft:#FBF3E0;
+--red:#D93025;--red-soft:#FFF1F0;--log-bg:#FAF7F0;
+--r-lg:22px;--r-md:11px;--btn:10px;
+--sans:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+--mono:ui-monospace,"SF Mono",Menlo,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;
+background-image:radial-gradient(rgba(201,151,43,.07) 1px,transparent 1px);background-size:26px 26px}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+/* focus */
+:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:6px}
+/* 2 顶部版本条 */
+.topline{background:var(--paper-deep);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.topline .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:8px;padding-bottom:8px}
+.topline a{white-space:nowrap}
+/* 3 导航 */
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,251,242,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.nav .wrap{display:flex;align-items:center;gap:14px;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--card-warm);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink)}
+.mark svg{width:24px;height:24px}
+.nav nav{margin-left:auto;display:flex;gap:18px;font-size:14px}
+.nav nav a{color:var(--ink-2)}.nav nav a:hover{color:var(--ink)}
+/* 4 hero */
+.hero{padding:56px 0 20px}
+.hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:28px;align-items:stretch}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--ink-2);
+border:1px solid var(--line);background:var(--card-warm);border-radius:999px;padding:5px 12px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block}
+h1{font-size:clamp(30px,4.6vw,52px);line-height:1.18;letter-spacing:-.02em;font-weight:800;margin:18px 0 12px}
+html.js h1 .fade{opacity:0;transform:translateY(10px);display:inline-block;transition:opacity .6s ease,transform .6s ease}
+html.js h1.in .fade{opacity:1;transform:none}
+html.noanim .rv,html.noanim h1 .fade{opacity:1!important;transform:none!important}
+.sub{color:var(--ink-2);font-size:16px;max-width:34em;margin:0 0 6px}
+.sub-en{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);margin:0 0 22px}
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:var(--btn);padding:12px 20px;font-size:15px;font-weight:700;border:1px solid transparent;cursor:pointer}
+.btn svg{width:18px;height:18px}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#256fe6;text-decoration:none}
+.btn-s{background:var(--card);border-color:var(--line);color:var(--ink)}.btn-s:hover{border-color:#d8cfbc;text-decoration:none}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.facts li{font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:999px;padding:4px 11px}
+/* hero 视觉卡 */
+.stage{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;
+box-shadow:0 1px 2px rgba(26,29,33,.04),0 12px 32px -16px rgba(26,29,33,.10)}
+.stage-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.dots{display:flex;gap:6px}.dots span{width:9px;height:9px;border-radius:50%;border:1px solid var(--line);background:var(--paper-deep)}
+.stage-hd b{margin-left:auto;font-weight:400;font-size:12px}
+.stage canvas{display:block;width:100%;flex:1 1 auto;min-height:320px;background:
+radial-gradient(420px 220px at 82% 50%,rgba(201,151,43,.10),transparent 70%),var(--card-warm)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:11px 16px 14px;border-top:1px solid var(--line-soft);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.legend s{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;text-decoration:none;vertical-align:baseline}
+.lp{background:#C9C4B8}.lr{background:var(--amber)}.ld{background:var(--blue)}
+/* 5 通用分区 */
+section.block{padding:44px 0 8px}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.08em;margin:0 0 8px}
+h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;margin:0 0 8px;font-weight:800}
+.lead{color:var(--ink-2);margin:0 0 22px;max-width:46em}
+/* 6 能力网格 */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 16px 16px;transition:border-color .18s ease}
+.card:hover{border-color:#d5cbb4}
+.card svg{width:24px;height:24px;color:var(--ink-2);transition:transform .18s ease}
+.card:hover svg{transform:translateX(3px);color:var(--ink)}
+.card h3{font-size:15px;margin:10px 0 6px}
+.card p{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.7}
+.card .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--amber);background:var(--amber-soft);border:1px solid #efe0bd;border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px;font-weight:400}
+/* 7 工作流 */
+.flow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);overflow:hidden}
+.step{padding:24px 22px;position:relative}
+.step+.step{border-left:1px solid var(--line-soft)}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--amber)}
+.step h3{margin:6px 0 6px;font-size:17px}
+.step p{margin:0;color:var(--ink-2);font-size:14px}
+.step .ln{position:absolute;top:34px;right:-13px;width:26px;height:2px;background:var(--line)}
+.step:last-child .ln{display:none}
+/* 8 安装 */
+.install{background:var(--paper-edge);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px;padding:48px 0}
+.term{background:var(--log-bg);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+box-shadow:0 1px 2px rgba(26,29,33,.04),0 12px 32px -16px rgba(26,29,33,.10)}
+.term-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.copy{margin-left:auto;font-family:var(--sans);font-size:13px;font-weight:700;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 14px;cursor:pointer;color:var(--ink);display:inline-flex;gap:7px;align-items:center}
+.copy svg{width:15px;height:15px}.copy:hover{border-color:#d5cbb4}
+.term pre{margin:0;padding:18px 18px 20px;font-family:var(--mono);font-size:13.5px;line-height:2;overflow-x:auto;color:var(--ink)}
+.term pre .p{color:var(--ink-3);user-select:none}
+.sys{font-size:13px;color:var(--ink-2);margin:14px 2px 0}
+.caveat{margin:10px 0 0;background:var(--red-soft);border:1px solid #f0d4d1;border-left:3px solid var(--red);border-radius:10px;padding:11px 14px;font-size:13px;color:#7a2b26}
+.caveat code{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid #eac9c6;border-radius:6px;padding:1px 6px;color:#7a2b26}
+/* 8b 工作区复刻（ws- 前缀独立，三栏时间线） */
+:root{--ws-bg:#F6F4EF;--ws-sel:#FFF0D9;--ws-selbd:#F2C878;--ws-run:#E0862E;--ws-ok:#2E9E5B;--ws-stop:#E5484D}
+.ws-win{background:var(--ws-bg);border:1px solid var(--line);border-radius:22px;overflow:hidden;max-width:100%;min-width:0;
+box-shadow:0 1px 2px rgba(26,29,33,.04),0 12px 32px -16px rgba(26,29,33,.10)}
+.ws-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line-soft);font-size:12px;color:var(--ink-2);background:var(--ws-bg)}
+.ws-dots{display:inline-flex;gap:6px;flex:none}
+.ws-dots span{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ws-dots span:nth-child(1){background:#FF5F57}.ws-dots span:nth-child(2){background:#FEBC2E}.ws-dots span:nth-child(3){background:#28C840}
+.ws-title{font-family:var(--mono);font-size:12px;color:var(--ink-2);text-align:center;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-state{font-family:var(--mono);font-size:11px;color:var(--ink-3);white-space:nowrap}
+.ws-cols{display:grid;grid-template-columns:minmax(0,22%) minmax(0,45%) minmax(0,33%);align-items:stretch;min-width:0}
+.ws-sess{border-right:1px solid var(--line-soft);padding:10px 8px;min-width:0;background:var(--ws-bg);display:flex;flex-direction:column;gap:2px}
+.ws-tools{display:flex;align-items:center;gap:8px;padding:0 2px 4px}
+.ws-new{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--ink);font-size:15px;line-height:1;flex:none}
+.ws-layout{margin-left:auto;color:var(--ink-3);display:inline-flex}
+.ws-layout svg{width:15px;height:15px}
+.ws-gcap{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3);margin:8px 4px 3px;display:flex;align-items:center;gap:5px;text-transform:uppercase;white-space:nowrap}
+.ws-gcap .tri{font-size:8px}
+.ws-sess ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.ws-sess li{display:flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:8px;padding:5px 7px;min-width:0}
+.ws-sess li .t{flex:1;min-width:0;font-size:11.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-sess li .m{font-family:var(--mono);font-size:10px;color:var(--ink-3);white-space:nowrap;flex:none}
+.ws-sess li.on{background:var(--ws-sel);border-color:var(--ws-selbd)}
+.ws-sess li.on .m{background:var(--ws-run);color:#fff;border-radius:999px;padding:1px 7px;font-size:10px}
+.ws-more{font-size:11px;color:var(--ink-3);margin:6px 4px 0}
+.ws-me{margin-top:auto;display:flex;align-items:center;gap:7px;border-top:1px solid var(--line-soft);padding:9px 2px 0;font-size:11.5px;font-weight:700}
+.ws-face{width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;flex:none;color:var(--ink-2)}
+.ws-face svg{width:13px;height:13px}
+.ws-gear{margin-left:auto;color:var(--ink-3);display:inline-flex}
+.ws-gear svg{width:15px;height:15px}
+.ws-flow{padding:0;min-width:0;display:flex;flex-direction:column;background:#fff}
+.ws-tl-hd{padding:10px 14px 8px;border-bottom:1px solid var(--line-soft);position:relative;background:#fff}
+.ws-tl-t{font-size:12px;font-weight:800;margin:0}
+.ws-tl-s{font-size:11px;color:var(--ink-3);margin:1px 0 0}
+.ws-go{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:#fff;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:700;padding:3px 14px;box-shadow:0 2px 8px rgba(26,29,33,.10);white-space:nowrap}
+.ws-tl{padding:10px 14px 12px;display:grid;gap:9px;align-content:start}
+.ws-meta{display:flex;align-items:center;gap:6px;font-size:11px}
+.ws-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.ws-dot.done{background:var(--ws-ok)}
+.ws-dot.run{background:var(--ws-run);animation:ws-pulse 1.6s ease-in-out infinite}
+@keyframes ws-pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,134,46,.45)}50%{box-shadow:0 0 0 6px rgba(224,134,46,0)}}
+.ws-who2{font-weight:700}
+.ws-time{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.ws-body{font-size:12px;line-height:1.6;margin:0;color:var(--ink);overflow-wrap:anywhere}
+.ws-body .x{margin-left:auto;color:var(--ink-3);flex:none}
+.ws-bl{display:flex;gap:6px;align-items:flex-start}
+.ws-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:nowrap}
+.ws-tool{display:flex;align-items:center;gap:7px;min-width:0;font-size:11.5px}
+.ws-tool svg{width:14px;height:14px;color:var(--ink-3);flex:none}
+.ws-path{font-family:var(--mono);font-size:11px;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.ws-delta{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);white-space:nowrap;margin-left:auto;flex:none}
+.ws-runline{display:grid;gap:3px}
+.ws-runline .rl{color:var(--ws-run);font-size:11px;font-weight:700}
+.ws-cmp{margin-top:auto;border-top:1px solid var(--line-soft);padding:10px 12px 12px;background:#fff}
+.ws-box{border:1px solid var(--line);border-radius:14px;background:#fff;padding:9px 10px;min-height:66px;display:flex;flex-direction:column;gap:10px}
+.ws-ph{font-size:12px;color:var(--ink-3)}
+.ws-crow{display:flex;align-items:center;gap:6px}
+.ws-plus{width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;font-size:14px;color:var(--ink-2);flex:none}
+.ws-pill{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);border:1px solid var(--line-soft);background:var(--ws-bg);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.ws-stop{margin-left:auto;width:24px;height:24px;border-radius:50%;background:var(--ws-stop);color:#fff;display:grid;place-items:center;flex:none}
+.ws-stop svg{width:11px;height:11px}
+.ws-insp{border-left:1px solid var(--line-soft);padding:10px;min-width:0;background:#fff;display:flex;flex-direction:column;gap:8px}
+.ws-ibar{display:flex;align-items:center;gap:12px;color:var(--ink-3);padding:0 2px}
+.ws-ibar svg{width:14px;height:14px}
+.ws-ibar .xp{margin-left:auto;display:inline-flex}
+.ws-chip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:4px 5px 4px 10px;font-size:11px;font-weight:700;background:#fff;min-width:0}
+.ws-chip span.tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-chip .bd{width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
+.ws-chip .cx{margin-left:auto;color:var(--ink-3);flex:none;padding:0 4px}
+.ws-ctx{background:#FAF5E8;border:1px solid var(--line-soft);border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.6;color:var(--ink)}
+.ws-ctx .more{display:block;text-align:right;font-size:11px;color:var(--ink-3);margin-top:2px}
+.ws-task{display:flex;align-items:center;gap:6px;font-size:11.5px}
+.ws-task .tt{font-weight:700}
+.ws-tc{display:grid;gap:3px;padding:7px 8px;border:1px solid var(--line-soft);border-radius:10px;background:#fff}
+.ws-tc .r1{display:flex;gap:7px;align-items:center;min-width:0}
+.ws-tc .r1 svg{width:13px;height:13px;color:var(--ink-3);flex:none}
+.ws-tc .tx{font-size:11.5px;color:var(--ink);line-height:1.55}
+.ws-note{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin:12px 2px 0}
+@media(max-width:1100px){.ws-cols{grid-template-columns:minmax(0,1fr)}.ws-insp{display:none}.ws-sess{display:none}.ws-state{display:none}}
+@media(max-width:640px){.ws-flow{min-width:0}.ws-tl{padding:8px 10px}.ws-cmp{padding:8px}.ws-bar{padding:9px 10px}.ws-title{font-size:11px}.ws-pill{display:none}}
+@media(prefers-reduced-motion:reduce){.ws-dot.run{animation:none}}
+/* 9 页脚 */
+footer{padding:30px 0 40px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding-top:6px}
+.ft-l{font-weight:700;font-size:14px}
+.ft nav{display:flex;gap:18px;font-size:14px}
+.copy2{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:10px}
+/* 进场 */
+html.js .rv{opacity:0;transform:translateY(12px);transition:opacity .55s ease,transform .55s ease}
+html.js .rv.in{opacity:1;transform:none}
+/* 10 响应式 */
+@media(max-width:1100px){
+.hero-grid{grid-template-columns:1fr}
+.grid{grid-template-columns:repeat(2,1fr)}
+.flow{grid-template-columns:1fr}
+.step+.step{border-left:0;border-top:1px solid var(--line-soft)}
+.step .ln{display:none}
+.nav nav{display:none}
+}
+@media(max-width:640px){
+.wrap{padding:0 16px}
+body{font-size:15px}
+.hero{padding-top:36px}
+.stage canvas{height:280px}
+.grid{grid-template-columns:1fr}
+.btns{flex-direction:column;align-items:stretch}
+.btn{width:100%;justify-content:center}
+.topline .wrap{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+*{transition:none!important;scroll-behavior:auto!important}
+.rv,h1 .fade{opacity:1!important;transform:none!important}
+}
 </style>
+<script>document.documentElement.className="js";addEventListener("error",function(){document.documentElement.className="js noanim"});</script>
 </head>
 <body>
-<main class="card">
-<div class="badge">GitHub Pages Demo</div>
-<h1>🤖 botChat 演示页</h1>
-<p class="desc">这是 botChat 的演示页，用于 GitHub Pages 展示。<br>页面为静态 HTML，可直接在浏览器中打开预览。</p>
-<div class="features"><span>✨ 界面美观</span><span>📱 响应式</span><span>🚀 静态托管</span></div>
-<a class="btn" href="#">开始体验</a>
-<footer>botChat · Demo · 2026</footer>
+<div class="topline"><div class="wrap"><span>v1.0 · macOS 26 及以上（建议 26.1+）· Apple Silicon</span><a href="#install">直达安装 →</a></div></div>
+<header class="nav"><div class="wrap">
+<div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2.2"/><circle cx="12.5" cy="5.5" r="2.2"/><circle cx="12.5" cy="18.5" r="2.2"/><circle cx="19.5" cy="12" r="2.2"/><path d="M7 12h3.2M10.6 6.6 7.4 10.4M10.6 17.4 7.4 13.6M14.5 6.4c1.8 1.4 2.7 3.2 3 5.6M14.5 17.6c1.8-1.4 2.7-3.2 3-5.6"/></svg></span>botChat</div>
+<nav aria-label="站内导航"><a href="#caps">能力</a><a href="#flow">工作流</a><a href="#install">安装</a><a href="https://github.com/feint123/botChat">GitHub</a></nav>
+</div></header>
+<main>
+<!-- Hero -->
+<section class="hero"><div class="wrap hero-grid">
+<div>
+<span class="eyebrow"><i></i>群聊式 Agent 任务编排 · macOS 原生客户端</span>
+<h1 id="h1"><span class="fade">说要什么，</span><br><span class="fade">剩下的交给分身。</span></h1>
+<p class="sub">左右分栏的群聊式 Agent 任务编排应用——你只说要什么，主 Agent 拆解并现场合成子 Agent 并行执行，再汇聚成一份结果。</p>
+<p class="sub-en">supervisor fans out at runtime · sub-agents run in parallel · results converge</p>
+<div class="btns">
+<a class="btn btn-p" href="https://github.com/feint123/botChat/releases/download/v1.0/botChat-1.0.dmg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>下载 macOS 版</a>
+<a class="btn btn-s" href="https://github.com/feint123/botChat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9l-4 3 4 3M15 9l4 3-4 3M13 5l-2 14"/></svg>查看源码</a>
+</div>
+<ul class="facts"><li>Swift + SwiftUI · Apple Silicon 构建</li><li>内置服务随应用启动 · 健康探测通过才放行</li><li>AG-UI 单流 · REST + SSE · 不用 WebSocket</li></ul>
+</div>
+<div class="stage" aria-label="编排示意：主 Agent 分叉出三个子 Agent 并行执行后汇聚">
+<div class="stage-hd"><span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>orchestration · live<span><b id="phase">fan-out</b></span></div>
+<canvas id="cv" role="img" aria-label="分叉并行再汇聚的编排动效"></canvas>
+<div class="legend" aria-hidden="true"><span><s class="lp"></s>pending 等待</span><span><s class="lr"></s>running 执行中</span><span><s class="ld"></s>done 已完成</span></div>
+</div>
+</div></section>
+<!-- 工作区 -->
+<section class="block" id="workspace"><div class="wrap">
+<p class="kicker">WORKSPACE</p><h2>一个窗口，三列分工。</h2>
+<p class="lead rv">左边是会话列表，中间主 Agent 与子 Agent 在同一条消息流里推进，右边 Inspector 只看任务、上下文与用量。</p>
+<div class="ws-win rv" role="img" aria-label="botChat 工作区示意：左侧分组会话列表，中间工具执行时间线与输入框，右侧 Inspector 工具调用详情">
+<div class="ws-bar"><span class="ws-dots" aria-hidden="true"><span></span><span></span><span></span></span><span class="ws-title">botChat · botChatRelease</span><span class="ws-state">embedded server · ready</span></div>
+<div class="ws-cols">
+<div class="ws-sess"><div class="ws-tools"><span class="ws-new">+</span><span class="ws-layout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="16" rx="1.5"/><rect x="13" y="4" width="7" height="16" rx="1.5"/></svg></span></div>
+<p class="ws-gcap">botChatRelease 3 <span class="tri">▾</span></p><ul>
+<li class="on"><span class="t">重构主页动效与编排演示</span><span class="m">1m 37s</span></li>
+<li><span class="t">整理设计 token 与色板</span><span class="m">22:30</span></li>
+<li><span class="t">修构建脚本与发布流程</span><span class="m">刚刚</span></li>
+</ul><p class="ws-gcap">未分类 15 <span class="tri">▾</span></p><ul>
+<li><span class="t">写发布说明初稿</span><span class="m">2天前</span></li>
+<li><span class="t">对齐群聊时间线文案</span><span class="m">2天前</span></li>
+</ul><p class="ws-gcap">已归档 <span class="tri">▾</span></p>
+<p class="ws-more">显示更多会话 还有 2 条</p>
+<div class="ws-me"><span class="ws-face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01"/></svg></span>botChat<span class="ws-gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z"/></svg></span></div></div>
+<div class="ws-flow">
+<div class="ws-tl-hd"><p class="ws-tl-t">botChat index.html</p><p class="ws-tl-s">群聊协作</p><span class="ws-go">继续</span></div>
+<div class="ws-tl">
+<div class="ws-meta"><span class="ws-dot done" aria-hidden="true"></span><span class="ws-who2">botChatRelease</span><span class="ws-time">00:45</span></div>
+<p class="ws-body ws-bl">已按三栏结构重做工作区复刻：左侧分组会话、中间时间线、右侧 Inspector。<span class="x">&gt;</span></p>
+<div class="ws-status"><span class="ws-dot done" aria-hidden="true"></span>完成 · 3 个步骤 · 4s</div>
+<div class="ws-tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H4zM4 20h16"/></svg><span class="ws-path">write ~/botChat/index.html</span><span class="ws-delta">+78 -12</span></div>
+<div class="ws-tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v6m0 0 3-3m-3 3-3-3M5 20h14"/></svg><span class="ws-path">delegate GOAL 重做工作区界面区块…</span></div>
+<div class="ws-meta"><span class="ws-dot run" aria-hidden="true"></span><span class="ws-who2">botChatRelease</span><span class="ws-time">00:58</span></div>
+<div class="ws-runline"><span class="rl">运行中</span><p class="ws-body ws-bl">正在校验 1280 与 390 宽截图，确认无横向溢出。<span class="x">&gt;</span></p></div>
+<div class="ws-status"><span class="ws-dot done" aria-hidden="true"></span>完成 · 2 个步骤 · 3s</div>
+</div>
+<div class="ws-cmp"><div class="ws-box"><span class="ws-ph">发送消息…</span><div class="ws-crow"><span class="ws-plus">+</span><span class="ws-pill">5%</span><span class="ws-pill">最高 ▾</span><span class="ws-pill">DeepSeek V4.1 ▾</span><span class="ws-stop"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></span></div></div></div>
+</div>
+<div class="ws-insp">
+<div class="ws-ibar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h9"/></svg><span class="xp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg></span></div>
+<div class="ws-chip"><span class="tx">工作区界面复刻</span><span class="bd"></span><span class="cx">×</span></div>
+<div class="ws-ctx">上下文：你上一轮产出的「botChat/index.html」…<span class="more">显示完整消息</span></div>
+<div class="ws-task"><span class="ws-dot done" aria-hidden="true"></span><span class="tt">工作区界面复刻</span><span class="ws-time">00:58</span></div>
+<p class="ws-body">按真实三栏结构重做复刻区块。</p>
+<div class="ws-tc"><div class="r1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg><span class="ws-path">read_file ~/botChat/index.html</span></div><p class="tx">已定位 Hero 结束与 CAPABILITIES 开始的锚点。</p></div>
+<div class="ws-status"><span class="ws-dot done" aria-hidden="true"></span>完成 · 2 个步骤 · 3s</div>
+<div class="ws-tc"><div class="r1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg><span class="ws-path">edit ~/botChat/index.html</span></div><p class="tx">替换时间线与 Inspector，保持外壳与锚点不动。</p></div>
+</div>
+</div>
+</div>
+<p class="ws-note">界面示意 · 非实时</p>
+</div></section>
+<!-- 能力 -->
+<section class="block" id="caps"><div class="wrap">
+<p class="kicker">CAPABILITIES</p><h2>过程可见，结果可收。</h2>
+<p class="lead rv">主 Agent 与子 Agent 的消息出现在同一条时间线上。谁在干什么、卡在哪里，都看得见，也都能追问。</p>
+<div class="grid">
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h6M4 12h10M4 18h6"/><circle cx="18" cy="6" r="2.4"/><circle cx="18" cy="18" r="2.4"/></svg><h3>任务编排</h3><p>主 Agent 拆解需求，现场合成子 Agent 并行执行，完成后汇聚成一份结果。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v10H9l-5 4V5z"/><path d="M8 9h8M8 12.5h5"/></svg><h3>群聊式时间线</h3><p>主 Agent 与子 Agent 的消息、工具调用同流展示，可取消、可续跑。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M8 9l2 2 4-4M4 20h16"/></svg><h3>任务预确认卡</h3><p>关键提交前弹一张结构化确认卡，确认后再执行，不用重写提示词。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="7" height="16" rx="1.5"/><rect x="13.5" y="4" width="7" height="16" rx="1.5"/></svg><h3>多列工作区</h3><p>可拖拽分栏，相邻列可锁定成组整体移动，3 个布局预设一键切换。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="11" rx="2"/><path d="M9 20h6M12 16v4M7 10l2 2 4-4"/></svg><h3>桌面操作</h3><p>经独立 mac_use 委派变体派出，看窗口、点按钮、输文本。桌面操作有动作分级。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l7 7-7 7M12 19h7"/></svg><h3>工具与 MCP</h3><p>bash 合并登录 shell 环境（服务端优先 + PATH 并集），文件读写与 MCP 池接入。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 8.5V12l2.5 2"/></svg><h3>定时与 Skill</h3><p>到点自动发起一轮运行；项目 Skill 按需装载，会话记忆可跨会话回捞。</p></div>
+<div class="card rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18V9l8-5 8 5v9"/><path d="M4 18h16M9 18v-5h6v5"/></svg><h3>设计系统库</h3><h3>设计系统库<span class="tag">76 套</span></h3><p>内置 76 套设计 token（Claude / Vercel / Stripe / Spotify 风格）供设计任务取用。</p></div>
+</div>
+</div></section>
+<!-- 工作流 -->
+<section class="block" id="flow"><div class="wrap">
+<p class="kicker">WORKFLOW</p><h2>三步，从一句话到一份结果。</h2>
+<p class="lead rv">父会话不阻塞等待，子 Agent 结果自动投递回来。</p>
+<div class="flow rv">
+<div class="step"><div class="n">01</div><h3>说需求</h3><p>在左侧输入你要什么，不用拆步骤，不用写流水线配置。</p><span class="ln"></span></div>
+<div class="step"><div class="n">02</div><h3>拆解并合成</h3><p>主 Agent 拆成 3–4 个子任务，现场合成子 Agent 并行跑，状态实时可见。</p><span class="ln"></span></div>
+<div class="step"><div class="n">03</div><h3>汇聚交付</h3><p>子结果自动投递、汇聚成一份完整答复，可继续追问或续跑。</p></div>
+</div>
+</div></section>
+<!-- 安装 -->
+<section class="install" id="install"><div class="wrap">
+<p class="kicker">INSTALL</p><h2>三行命令，装好即用。</h2>
+<p class="lead">内置 Python / FastAPI 服务随 botChat.app 一起启动，无需自己跑后端。</p>
+<div class="term rv">
+<div class="term-hd"><span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>terminal — zsh<button class="copy" id="cp" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span id="cpt">复制</span></button></div>
+<pre id="brew"><span class="p">$ </span>brew tap feint123/tap
+<span class="p">$ </span>brew trust feint123/tap
+<span class="p">$ </span>brew install --cask botchat</pre>
+</div>
+<p class="sys">系统要求：macOS 26 及以上（建议 26.1+）· Apple Silicon（arm64）· 也可以直接下载 <a href="https://github.com/feint123/botChat/releases/download/v1.0/botChat-1.0.dmg">botChat-1.0.dmg</a> 安装。</p>
+<p class="caveat">当前版本未经 Apple 公证，首次打开可能被 Gatekeeper 拦截；可用 <code>--no-quarantine</code> 安装，或执行 <code>sudo xattr -dr com.apple.quarantine /Applications/botChat.app</code> 解除。</p>
+</div></section>
 </main>
+<footer><div class="wrap">
+<div class="ft"><div class="ft-l">botChat · 桌面客户端 for AI agents</div>
+<nav aria-label="页脚链接"><a href="https://github.com/feint123/botChat">GitHub</a><a href="https://github.com/feint123/homebrew-tap">Homebrew Tap</a></nav></div>
+<div class="copy2">botChat · 2025–2026 · macOS 26+ · arm64</div>
+</div></footer>
+<script>
+(function(){
+"use strict";
+/* 复制 */
+var cp=document.getElementById('cp'),cpt=document.getElementById('cpt'),busy=false;
+var TXT="brew tap feint123/tap\nbrew trust feint123/tap\nbrew install --cask botchat";
+function ok(){cpt.textContent="已复制";busy=true;setTimeout(function(){cpt.textContent="复制";busy=false;},1600);}
+function fb(){var t=document.createElement('textarea');t.value=TXT;t.setAttribute('readonly','');t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');ok();}catch(e){cpt.textContent="复制失败";}document.body.removeChild(t);}
+cp.addEventListener('click',function(){if(busy)return;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(TXT).then(ok,fb);}else{fb();}});
+/* 标题淡入 + 滚动进场 */
+var h1=document.getElementById('h1');
+(function(){var sp=h1.querySelectorAll('.fade');for(var i=0;i<sp.length;i++){sp[i].style.transitionDelay=(i*0.12)+'s';}requestAnimationFrame(function(){h1.classList.add('in');});})();
+if(!('IntersectionObserver' in window)){document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});}
+/* 主动效：分叉→并行→汇聚 */
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),ph=document.getElementById('phase');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var W=0,H=0,DPR=1,raf=0,hidden=false,t0=0,pauseAt=0,CYCLE=7600;
+function geom(w,h){var gx=w<560?0.86:1;return{mx:Math.round(w*(w<560?0.13:0.11)),my:Math.round(h*0.5),
+subs:[0.22,0.5,0.78].map(function(f){return{x:Math.round(w*0.55*gx),y:Math.round(h*f)};}),
+sx:Math.round(w*(w<560?0.9:0.88)),sy:Math.round(h*0.5)};}
+function bz(a,c,b,t){var u=1-t;return{x:u*u*a.x+2*u*t*c.x+t*t*b.x,y:u*u*a.y+2*u*t*c.y+t*t*b.y};}
+function ctrl(a,b){return{x:(a.x+b.x)/2,y:a.y};}
+function fit(){DPR=Math.min(window.devicePixelRatio||1,2);var r=cv.getBoundingClientRect();W=Math.max(280,r.width);H=Math.max(240,cv.clientHeight||340);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);}
+function line(a,b,from,to,style,lw,dash){var c=ctrl(a,b);ctx.save();ctx.strokeStyle=style;ctx.lineWidth=lw||1.4;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();var drew=false;for(var i=0;i<=40;i++){var t=from+(to-from)*i/40;if(t<=0)continue;var p=bz(a,c,b,Math.min(1,Math.max(0,t)));if(!drew){ctx.moveTo(p.x,p.y);drew=true;}else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.restore();}
+function node(p,st,r,glow){ctx.save();if(glow){var g=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,54);g.addColorStop(0,'rgba(201,151,43,.30)');g.addColorStop(1,'rgba(201,151,43,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,54,0,7);ctx.fill();}
+if(st==='run'){var pl=1+0.22*Math.sin(performance.now()/180);ctx.strokeStyle='#C9972B';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(p.x,p.y,(r+5)*pl,0,7);ctx.stroke();}
+ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);
+if(st==='main'){ctx.fillStyle='#1A1D21';ctx.fill();}
+else if(st==='run'){ctx.fillStyle='#C9972B';ctx.fill();}
+else if(st==='done'){ctx.fillStyle='#2F7CF6';ctx.fill();}
+else{ctx.fillStyle='#FFFEFB';ctx.fill();ctx.strokeStyle='#C9C4B8';ctx.lineWidth=1.5;ctx.stroke();}
+if(st==='done'||st==='run'){ctx.strokeStyle='#fff';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.beginPath();var k=r*0.42;ctx.moveTo(p.x-k*0.9,p.y+k*0.05);ctx.lineTo(p.x-k*0.1,p.y+k*0.75);ctx.lineTo(p.x+k,p.y-k*0.6);ctx.stroke();}
+ctx.restore();}
+function label(p,t,mono,col){ctx.save();ctx.font='11px ui-monospace,SF Mono,Menlo,monospace';ctx.textAlign='center';ctx.fillStyle=col||'#5A5F66';ctx.fillText(t,p.x,p.y+(p.main?34:26));ctx.restore();}
+function draw(ms){
+var G=geom(W,H),el=((ms%CYCLE)+CYCLE)%CYCLE,t=el/CYCLE;
+ctx.clearRect(0,0,W,H);
+/* 纸网格 */
+ctx.save();ctx.strokeStyle='rgba(26,29,33,.045)';ctx.lineWidth=1;ctx.beginPath();
+for(var gx=0.5;gx<W;gx+=26){ctx.moveTo(gx,0);ctx.lineTo(gx,H);}for(var gy=0.5;gy<H;gy+=26){ctx.moveTo(0,gy);ctx.lineTo(W,gy);}ctx.stroke();ctx.restore();
+var grow=[clamp((t-0.04)/0.16),clamp((t-0.12)/0.16),clamp((t-0.20)/0.16)];
+var states=grow.map(function(g,i){if(g>=1){var rt=(t-(0.20+i*0.0))/1;var runEnd=0.44+i*0.07;if(t<runEnd)return'run';return'done';}return g>0.02?'run':'wait';});
+/* 主线 */
+for(var i=0;i<3;i++){line({x:G.mx,y:G.my},G.subs[i],0,grow[i],'rgba(47,124,246,.55)',1.5);}
+/* travelling dots (<=12) */
+var dots=0;
+for(var j=0;j<3;j++){if(grow[j]>0&&grow[j]<1&&states[j]!=='wait'){var c=ctrl({x:G.mx,y:G.my},G.subs[j]);for(var k=0;k<2;k++){var tt=(ms/900+k*0.5+j*0.33)%1;if(tt<grow[j]&&dots<12){var p=bz({x:G.mx,y:G.my},c,G.subs[j],tt);ctx.save();ctx.fillStyle='rgba(47,124,246,.85)';ctx.beginPath();ctx.arc(p.x,p.y,2.4,0,7);ctx.fill();ctx.restore();dots++;}}}}
+/* 汇聚 */
+var cg=clamp((t-0.62)/0.18);
+if(cg>0){for(var m=0;m<3;m++){line(G.subs[m],{x:G.sx,y:G.sy},0,cg,'rgba(201,151,43,.6)',1.3,[5,4]);}}
+/* 光晕一次 */
+var glow=(t>0.82&&t<0.94)?Math.sin((t-0.82)/0.12*Math.PI):0;
+/* 节点 */
+node({x:G.mx,y:G.my},'main',13,false);label({x:G.mx,y:G.my,main:true},'main',0,'#1A1D21');
+var names=['agent-a','agent-b','agent-c'];
+for(var n=0;n<3;n++){node(G.subs[n],states[n],10,false);ctx.save();ctx.font='11px ui-monospace,SF Mono,Menlo,monospace';ctx.textAlign='center';ctx.fillStyle='#5A5F66';ctx.fillText(names[n],G.subs[n].x,G.subs[n].y-18);ctx.restore();label(G.subs[n],states[n]==='done'?'done':states[n]==='run'?'running':'pending');}
+/* sink 卡 */
+ctx.save();var sw=Math.min(118,W*0.2),sh=64;var rx=G.sx-sw/2,ry=G.sy-sh/2;
+if(glow>0){var gg=ctx.createRadialGradient(G.sx,G.sy,4,G.sx,G.sy,70);gg.addColorStop(0,'rgba(201,151,43,'+(0.28*glow)+')');gg.addColorStop(1,'rgba(201,151,43,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(G.sx,G.sy,70,0,7);ctx.fill();}
+ctx.fillStyle=cg>=1?'#EAF1FE':'#FFFEFB';ctx.strokeStyle=cg>=1?'#2F7CF6':'#EDE6D8';ctx.lineWidth=cg>=1?1.8:1.4;
+roundRect(rx,ry,sw,sh,10);ctx.fill();ctx.stroke();
+ctx.fillStyle='#1A1D21';ctx.font='700 12px -apple-system,PingFang SC,sans-serif';ctx.textAlign='center';ctx.fillText('结果卡片',G.sx,G.sy-2);
+ctx.fillStyle='#5A5F66';ctx.font='10px ui-monospace,Menlo,monospace';ctx.fillText(cg>=1?'merged':'merging…',G.sx,G.sy+15);ctx.restore();
+if(ph)ph.textContent=t<0.36?'fan-out':t<0.62?'parallel run':t<0.82?'converge':'merged · loop';
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function clamp(v){return Math.max(0,Math.min(1,v));}
+function frame(ms){if(hidden)return;if(!t0)t0=ms;draw(ms-t0+1200);raf=requestAnimationFrame(frame);}
+function static_(){fit();draw(CYCLE*0.9);}
+if(RM){fit();static_();}
+else{fit();raf=requestAnimationFrame(frame);}
+document.addEventListener('visibilitychange',function(){hidden=document.hidden;if(hidden){pauseAt=performance.now();if(raf)cancelAnimationFrame(raf);raf=0;}else{if(!RM){t0+=performance.now()-pauseAt;raf=requestAnimationFrame(frame);}}});
+var rz;window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(function(){fit();if(RM)static_();},120);},{passive:true});
+})();
+</script>
 </body>
 </html>
