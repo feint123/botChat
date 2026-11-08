@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.5</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.5</h1>
+<h3>botChat 1.1.5</h3>
+<p>本次更新把「客户端控件」统一到全新的 <strong>Paper 组件体系</strong>，并让模型选择从「换主 Agent」扩展为 <strong>四角色分发</strong>（主 / 池 / 命名 / 读图）；同时修复了工具取消后倒计时不消失的顽疾。</p>
+<h4>新增</h4>
+<ul>
+  <li><strong>Paper 系列基础组件</strong>：新增 <code>PaperIconButton</code>、<code>PaperMenuPicker</code>、<code>PaperPopoverSurface</code>、<code>PaperPressStyle</code>、<code>PaperFieldBox</code>、<code>PaperGlassField</code>、<code>PaperSearchChip</code>，重构 <code>PaperSearchField</code> 与 <code>PanelHeaderIconButton</code>，<code>PaperTheme</code> 补齐对应设计令牌。全站控件的按压反馈、边框、弹层质感自此同源。</li>
+  <li><strong>模型角色分发</strong>：composer 模型浮层的列表行显示该模型已占用的角色徽章，底部新增<strong>角色摘要条</strong>（主 / 池 / 命名 / 读图），点击行按当前目标角色分发写入。主 Agent 仍走「会话级 + 全局」双写并关闭浮层；池 / 命名 / 读图只走全局通道且浮层保持打开，便于连续配置。</li>
+  <li><strong>Provider 设置看板</strong>：新增 <code>ProviderListView</code>、<code>ProviderListEditor</code>、<code>ProviderListModelRowView</code>、<code>ProviderRolePickerPopover</code>、<code>ProviderRoleSummaryBar</code>、<code>ProviderSlotSections</code> 与 <code>ProviderRoleChip</code>，按角色分栏管理模型提供方；顶部只读角色总览条点选即可横滚定位到对应列。</li>
+  <li><strong>Todo 看板创建流程</strong>：看板支持直接新建待办，不再需要绕道命令行或其它入口。</li>
+</ul>
+<h4>改进</h4>
+<ul>
+  <li><strong>控件全面迁移至 Paper 体系</strong>：聊天输入区、设置窗口、工作区文件面板、DesignMode 画布、Todo 看板与提交面板的按钮 / 菜单 / 字段 / 弹层统一换用 Paper 组件，消除各处自绘控件在高度、圆角、按压态上的漂移。</li>
+  <li><strong>角色口径收敛</strong>：角色槽位的读取与写入一律转发 <code>ProviderAssignmentStore</code>，不新增第二条写链路，避免配置双写不一致。</li>
+</ul>
+<h4>修复</h4>
+<ul>
+  <li><strong>工具执行中取消/中断后倒计时冻结、停止无效</strong>：服务端不为在飞工具补结果帧，客户端又用失效字段当收口门闩，两层缺陷叠加导致工具行永久停在「执行中」——秒数冻结、停止入口随 run 隐藏、点了也没用。</li>
+  <li>服务端新增 <code>tool_ledger</code> 按 run 记账「已发 START、未收到结果」的调用，<code>tool_backfill</code> 作为补帧唯一实现（落库与出帧同点、逐条 fail-soft）。</li>
+  <li>新增三码 <code>TOOL_ABORTED_BY_RUN_TERMINATION</code> / <code>DECLINED_BY_USER</code> / <code>ORPHANED_BY_RESTART</code>，与工具自身失败族分立，不污染超时与取消率指标。</li>
+  <li>取消分支与 <code>finally</code> 各结清一次，保证四个出口不漏；<code>ask_user</code> 建中断与 <code>delegate</code> 暂缓这两条「有意不落结果」的分支主动脱账，避免误补。</li>
+  <li>启动时由 <code>run_reconcile</code> 清理跨重启遗留的无结果调用。</li>
+</ul>
+</body>
+</html>
