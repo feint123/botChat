@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.4</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.4</h1>
+<h3>botChat 1.1.4</h3>
+<p>本次更新聚焦 <strong>Goal 执行器台账</strong> 与 <strong>Todo 看板</strong> 两条主线的打通，并补齐「待答问题」的作答闭环。</p>
+<h4>新增</h4>
+<ul>
+  <li><strong>Goal 执行器台账链路</strong>：新增 <code>goal_actions</code> / <code>delivery</code> / <code>facts</code> 三张台账与 <code>goal_deliver</code> 工具，子 Agent 的交付申报、动作记录与事实快照统一落库，供时间线回放与复盘。</li>
+  <li><strong>Todo 看板绑定会话工作区</strong>：看板支持按会话工作区归类，新增「未分类」视角与归属提示，跨会话待办一眼可辨。</li>
+  <li><strong>待答问题答复闭环</strong>：<code>pending_question</code> 增加独立作答端点 <code>POST /api/todos/{id}/answer</code>，「需要你拍板」的问题可在卡片上直接作答；答复以独立段落注入执行 prompt，不影响 prompt 改写审计。</li>
+  <li><strong>待办彻底删除</strong>：支持 <code>DELETE /api/todos/{id}</code>，看板提供删除动作。</li>
+</ul>
+<h4>改进</h4>
+<ul>
+  <li><strong>Todo 面板视觉与结构统一</strong>：头部复用 <code>PanelHeaderBar</code> 消除双条厚重头部，动作条拆分为 <code>TodoRowActionBar</code> 并收敛到 <code>InlineCapsule</code> 组件；字号阶梯集中到 <code>PaperTheme.FontSize</code>，空态/失败态复用 <code>WorkspaceChangesEmptyState</code> 贴纸样式。</li>
+  <li><strong>原因行默认摘要展示</strong>：原始报文折叠为可选复制，噪声不再抢占版面。</li>
+  <li><strong>提交方案页签视觉统一</strong>，复用贮藏与更改列表既有组件；提交方案改为手动生成并收敛到方案页签。</li>
+</ul>
+<h4>修复</h4>
+<ul>
+  <li>会话可见 <code>kind</code> 白名单纳入 <code>goal</code>，并同步守住删除级联。</li>
+  <li><code>ManagerKindBadge</code> 兼容 <code>goal</code> 与历史 <code>manager</code> 会话标识。</li>
+  <li>LiveCapture 分辨率档位与输出尺寸改为同源统一口径，消除档位与实际输出不一致。</li>
+  <li>MacUse 通道握手归属连接与会话接管语义修复。</li>
+  <li>AI 分组编号化与自适应预算超时导致的频繁降级修复。</li>
+</ul>
+</body>
+</html>
