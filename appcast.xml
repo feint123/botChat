@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>botChat</title>
+        <item>
+            <title>1.1.0</title>
+            <pubDate>Sun, 08 Nov 2026 08:37:57 +0800</pubDate>
+            <link>https://github.com/feint123/botChat</link>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.1</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/feint123/botChat/releases/download/updates/botChat-1.1.0.zip" length="51335171" type="application/octet-stream" sparkle:edSignature="u0idLoJAblZeWZqzid2S68gBcnHCPbCfQ+bqqaTFUkNGuZGV9+rDnyeVUMUOr9LCniSiu02HeXcpCALQvNYJAg=="/>
+            <sparkle:releaseNotesLink>https://feint123.github.io/botChat/botChat-1.1.0.md</sparkle:releaseNotesLink>
+        </item>
+    </channel>
+</rss>
