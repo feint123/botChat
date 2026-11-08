@@ -1,0 +1,8 @@
+/* 1 tokens */
+:root{--paper:#FFFBF2;--paper-deep:#FFF8EB;--paper-edge:#EDE8DF;--card:#FFF;--card-warm:#FFFEFB;
+--line:#EDE6D8;--line-soft:#F2EDE2;--ink:#1A1D21;--ink-2:#5A5F66;--ink-3:#8B8B8B;
+--blue:#2F7CF6;--blue-soft:#EAF1FE;--amber:#C9972B;--amber-soft:#FBF3E0;
+--red:#D93025;--red-soft:#FFF1F0;--log-bg:#FAF7F0;
+--r-lg:22px;--r-md:11px;--btn:10px;
+--sans:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+--mono:ui-monospace,"SF Mono",Menlo,monospace}

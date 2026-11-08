@@ -1,0 +1,8 @@
+/* 3 导航 */
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,251,242,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.nav .wrap{display:flex;align-items:center;gap:14px;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--card-warm);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink)}
+.mark svg{width:24px;height:24px}
+.nav nav{margin-left:auto;display:flex;gap:18px;font-size:14px}
+.nav nav a{color:var(--ink-2)}.nav nav a:hover{color:var(--ink)}

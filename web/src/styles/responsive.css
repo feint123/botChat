@@ -1,0 +1,23 @@
+/* 10 响应式 */
+@media(max-width:1100px){
+.hero-grid{grid-template-columns:1fr}
+.grid{grid-template-columns:repeat(2,1fr)}
+.flow{grid-template-columns:1fr}
+.step+.step{border-left:0;border-top:1px solid var(--line-soft)}
+.step .ln{display:none}
+.nav nav{display:none}
+}
+@media(max-width:640px){
+.wrap{padding:0 16px}
+body{font-size:15px}
+.hero{padding-top:36px}
+.stage canvas{height:280px}
+.grid{grid-template-columns:1fr}
+.btns{flex-direction:column;align-items:stretch}
+.btn{width:100%;justify-content:center}
+.topline .wrap{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+*{transition:none!important;scroll-behavior:auto!important}
+.rv,h1 .fade{opacity:1!important;transform:none!important}
+}
