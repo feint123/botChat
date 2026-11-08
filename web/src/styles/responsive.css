@@ -6,6 +6,10 @@
 .step+.step{border-left:0;border-top:1px solid var(--line-soft)}
 .step .ln{display:none}
 .nav nav{display:none}
+.caps-lead{padding-right:0}
+.st-caps{display:none}
+.dl-card{padding-right:28px}
+.dl-card .dl-stickers{display:none}
 }
 @media(max-width:640px){
 .wrap{padding:0 16px}
@@ -16,6 +20,10 @@ body{font-size:15px}
 .btns{flex-direction:column;align-items:stretch}
 .btn{width:100%;justify-content:center}
 .topline .wrap{font-size:11px}
+.st-hero-a{width:76px;left:-6px;bottom:-10px}
+.st-hero-b{display:none}
+.dl-icon{width:72px;height:72px;border-radius:18px}
+.dl-card{padding:20px;gap:14px;grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){
 *{transition:none!important;scroll-behavior:auto!important}

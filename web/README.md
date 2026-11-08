@@ -32,6 +32,7 @@ web/
   src/
     main.js             注入 html.js / html.noanim、挂载、启用滚动进场、h1 淡入
     App.vue             按原 DOM 顺序组装 8 个区块组件
+    lib/release.js      版本号入口（构建期从 appcast.xml 注入，见下）
     components/
       SiteTopline.vue   SiteNav.vue       SiteFooter.vue
       HeroSection.vue   OrchestrationCanvas.vue
@@ -39,10 +40,26 @@ web/
       CapsSection.vue   FlowSection.vue   InstallSection.vue
     composables/
       useReveal.js               IntersectionObserver 滚动进场（.rv → .in）
-      useCopy.js                 brew 三行命令复制（1600ms 回落 + execCommand fallback）
       useOrchestrationCanvas.js  canvas 编排动效（分叉 → 并行 → 汇聚，CYCLE 7600ms）
+    assets/                     真实应用图标 app-icon.webp + 吉祥物贴纸 sticker-1..9.webp
     styles/                    全局 CSS，按原分区拆分，index.css 控制导入顺序
 ```
+
+## 版本号只有一个来源
+
+`vite.config.js` 在构建时读仓库根 `appcast.xml`，取语义版本最大的 `<item>`，注入三个常量：
+
+- `__APP_VERSION__`（shortVersionString，如 `1.1.2`）
+- `__APP_BUILD__`（build 号）
+- `__DMG_URL__`（`releases/download/v<version>/botChat-<version>.dmg`）
+
+业务代码只从 `src/lib/release.js` 读，**不要在组件里硬编码版本号或下载链接**。发版只改 appcast.xml，落地页重新 build + publish 即可跟上。
+
+## 图片素材
+
+- 全部是 webp，放 `src/assets/`，由 `import` 引入（`assetsInlineLimit` 已拉满，构建时内联成 base64，保持单文件产物）
+- 贴纸是装饰层：`position:absolute` + `pointer-events:none` + `alt=""`，语义上不进无障碍树；样式统一在 `src/styles/stickers.css`，小屏在 `responsive.css` 里收敛或隐藏
+- 现在用到的：hero 2 张（sticker-3 等待 / sticker-2 困惑）、能力区 1 张（sticker-8 放大镜）、下载卡片 3 张（sticker-1/4/9）；sticker-5/6/7 备用
 
 ## 改样式 / 改文案的约定
 

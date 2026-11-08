@@ -1,4 +1,6 @@
 <script setup>
+import stickerCurious from '../assets/sticker-8.webp'
+
 // 图形按原文子元素顺序平铺成 shapes，避免 paths/rects 分组导致渲染顺序改变
 const cards = [
   {
@@ -64,7 +66,6 @@ const cards = [
     ],
     title: '设计系统库',
     tag: '76 套',
-    dupTitle: true,
     desc: '内置 76 套设计 token（Claude / Vercel / Stripe / Spotify 风格）供设计任务取用。'
   }
 ]
@@ -75,17 +76,13 @@ const cards = [
     <div class="wrap">
       <p class="kicker">CAPABILITIES</p>
       <h2>过程可见，结果可收。</h2>
-      <p class="lead rv">主 Agent 与子 Agent 的消息出现在同一条时间线上。谁在干什么、卡在哪里，都看得见，也都能追问。</p>
+      <p class="lead rv caps-lead">主 Agent 与子 Agent 的消息出现在同一条时间线上。谁在干什么、卡在哪里，都看得见，也都能追问。
+        <img class="sticker st-caps" :src="stickerCurious" alt="" aria-hidden="true" loading="lazy" decoding="async" width="96" height="92">
+      </p>
       <div class="grid">
         <div v-for="c in cards" :key="c.title" class="card rv">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><template v-for="(s, i) in c.shapes" :key="i"><path v-if="s.tag === 'path'" :d="s.d" /><rect v-else-if="s.tag === 'rect'" :x="s.x" :y="s.y" :width="s.width" :height="s.height" :rx="s.rx" /><circle v-else :cx="s.cx" :cy="s.cy" :r="s.r" /></template></svg>
-          <h3 v-if="!c.dupTitle">{{ c.title }}<span v-if="c.tag" class="tag">{{ c.tag }}</span></h3>
-          <!-- 原文 L301 第 8 卡存在重复 h3（<h3>设计系统库</h3><h3>设计系统库<span class="tag">76 套</span></h3>），
-               迁移按 1:1 保真保留，是否修正待上游确认 -->
-          <template v-else>
-            <h3>{{ c.title }}</h3>
-            <h3>{{ c.title }}<span v-if="c.tag" class="tag">{{ c.tag }}</span></h3>
-          </template>
+          <h3>{{ c.title }}<span v-if="c.tag" class="tag">{{ c.tag }}</span></h3>
           <p>{{ c.desc }}</p>
         </div>
       </div>

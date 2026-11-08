@@ -23,13 +23,37 @@ h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;margin:0 0 8px;font-weig
 .step:last-child .ln{display:none}
 /* 8 安装 */
 .install{background:var(--paper-edge);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px;padding:48px 0}
-.term{background:var(--log-bg);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+/* 下载卡片：真实 app icon + 当前版本 + 下载按钮 */
+.dl-card{position:relative;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
+background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 28px;padding-right:280px;
 box-shadow:0 1px 2px rgba(26,29,33,.04),0 12px 32px -16px rgba(26,29,33,.10)}
-.term-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
-.copy{margin-left:auto;font-family:var(--sans);font-size:13px;font-weight:700;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 14px;cursor:pointer;color:var(--ink);display:inline-flex;gap:7px;align-items:center}
-.copy svg{width:15px;height:15px}.copy:hover{border-color:#d5cbb4}
-.term pre{margin:0;padding:18px 18px 20px;font-family:var(--mono);font-size:13.5px;line-height:2;overflow-x:auto;color:var(--ink)}
-.term pre .p{color:var(--ink-3);user-select:none}
+.dl-card .dl-stickers{position:absolute;right:26px;bottom:-8px}
+.dl-icon{width:96px;height:96px;border-radius:22px;display:block;box-shadow:0 10px 24px -14px rgba(26,29,33,.40)}
+.dl-name{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:800;margin:0 0 4px}
+.dl-ver{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:1px solid #d8e5fd;border-radius:6px;padding:1px 7px}
+.dl-meta{font-size:13px;color:var(--ink-2);margin:0 0 14px}
+.dl-card .btns{margin:0}
 .sys{font-size:13px;color:var(--ink-2);margin:14px 2px 0}
-.caveat{margin:10px 0 0;background:var(--red-soft);border:1px solid #f0d4d1;border-left:3px solid var(--red);border-radius:10px;padding:11px 14px;font-size:13px;color:#7a2b26}
-.caveat code{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid #eac9c6;border-radius:6px;padding:1px 6px;color:#7a2b26}
+/* 首次放行说明：脚注式，不用告警色块 */
+.firstrun{margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);max-width:58em}
+.fr-t{margin:0 0 6px;font-size:15px;font-weight:800;letter-spacing:-.01em}
+.fr-d{margin:0 0 16px;font-size:13px;color:var(--ink-2)}
+.fr-step{display:grid;grid-template-columns:22px 1fr;align-items:start;margin-bottom:13px}
+.fr-step:last-child{margin-bottom:0}
+.fr-step .n{font-family:var(--mono);font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--ink-2);opacity:.8;
+line-height:25px} /* 与 .fr-body p 的 13.5px/1.85 首行基线对齐 */
+.fr-body{min-width:0}
+.fr-body p{margin:0;font-size:13.5px;line-height:1.85;color:var(--ink-2)}
+.fr-body kbd{font-family:var(--mono);font-size:12px;color:var(--ink);background:#F6F1E5;
+border:1px solid #D9CDB4;box-shadow:inset 0 -1px 0 #DED3BB;border-radius:4px;padding:0 4px;margin:0 1px;vertical-align:1px}
+.cmd{display:flex;align-items:center;gap:8px;margin-top:10px;background:#F1EBDC;border:1px solid #DCD2BC;border-radius:10px;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.7);padding:6px 7px 6px 12px}
+.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-family:var(--mono);font-size:13px;line-height:1.5;
+color:var(--ink);letter-spacing:-.01em}
+.cmd-cp{display:inline-flex;align-items:center;gap:5px;flex:none;font-family:var(--sans);font-size:12px;font-weight:600;
+color:var(--ink-2);background:var(--card);border:1px solid #D8CDB5;border-radius:7px;padding:4px 9px;cursor:pointer;
+transition:background .15s ease,color .15s ease,border-color .15s ease}
+.cmd-cp svg{width:13px;height:13px}
+.cmd-cp:hover{color:var(--ink);border-color:#D3C7AE;background:#FFFDF8}
+.cmd-cp:active{transform:translateY(.5px)}
+.cmd-cp[data-done="true"]{color:var(--blue);border-color:#CFE0FC;background:var(--blue-soft)}

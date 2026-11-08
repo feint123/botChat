@@ -1,0 +1,17 @@
+/* 11 吉祥物贴纸：纯装饰层，不参与交互与无障碍树 */
+.sticker{position:absolute;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(26,29,33,.12))}
+
+/* hero 编排卡两角 */
+.st-hero-a{left:-16px;bottom:-14px;width:104px;height:auto;transform:rotate(-7deg);z-index:3}
+.st-hero-b{right:-8px;top:-16px;width:88px;height:auto;transform:rotate(6deg);z-index:3}
+
+/* 能力区小标题右侧（放大镜观察，呼应「都看得见」） */
+.caps-lead{position:relative;padding-right:112px}
+.st-caps{right:-2px;top:-8px;width:96px;height:auto;transform:rotate(5deg)}
+
+/* 下载卡片右下角三连贴 */
+.dl-stickers{display:flex;align-items:flex-end}
+.dl-stickers .sticker{position:static;width:86px;height:auto;margin-left:-16px;filter:drop-shadow(0 8px 16px rgba(26,29,33,.14))}
+.dl-stickers .sticker:nth-child(1){margin-left:0;transform:rotate(-8deg)}
+.dl-stickers .sticker:nth-child(2){transform:rotate(4deg) translateY(-6px)}
+.dl-stickers .sticker:nth-child(3){transform:rotate(9deg)}
