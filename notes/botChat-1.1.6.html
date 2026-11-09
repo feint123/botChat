@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.6</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.6</h1>
+<h2>botChat 1.1.6</h2>
+<p>本次更新聚焦 composer 模型选择的口径收敛与 Qoder 模型列表的上游对齐，并打磨了面板拖拽与搜索入口的细节。</p>
+<h3>修复</h3>
+<ul>
+  <li><strong>composer 主 Agent 选择改为纯会话级</strong>：主 Agent 模型选择不再双写全局默认，摘要条经会话通道读写，避免不同会话之间互相污染主 Agent 配置。</li>
+  <li><strong>Qoder 模型列表对齐上游插件口径</strong>：合并 app scene 模型列表、free view 续期后自动重拉、精简 model_config 字段解析，模型列表与上游插件保持一致。</li>
+  <li><strong>调宽手柄统一为覆盖式</strong>：各面板（Design 画布 / 文件预览 / 工作区分栏）的调宽手柄改为覆盖式渲染，修复拖拽过程中即时宽度被相邻视图裁剪的问题。</li>
+</ul>
+<h3>新增</h3>
+<ul>
+  <li><strong>项目文件搜索入口显隐开关</strong>：项目文件面板新增搜索入口的显隐设置，默认隐藏，保持面板简洁。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li>移除提供方列表头部的说明文案，界面更清爽。</li>
+</ul>
+</body>
+</html>
