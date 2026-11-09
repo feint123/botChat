@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.7</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.7</h1>
+<h2>botChat 1.1.7</h2>
+<p>本次更新由桌面操作通道（macUse）的调用形状与可判定性改造主导：工具面由五降四、<code>find</code> 空结果可判定、骨架裁剪改按字节自适应、新增 <code>activate</code> 动作；同时把 Electron 类应用的 Web 渲染器无障碍接入流程，并优化设置页快捷键键帽的渲染性能。</p>
+<h3>改进</h3>
+<ul>
+  <li><strong>桌面工具面五降四，<code>wait</code> 退役</strong>：<code>wait</code> 是工具面上唯一「失败不影响正确性、只影响效率」的工具，长期不可用却无人发现（本机审计日志中它仅被调用 1 次，<code>failed:INVALID_ARGS</code>，从未真正进入等待循环）。其职责已各有更优归属——动作后的读回验证由 <code>act</code> 的 settle 承担，读取前的静默等待由 <code>observe</code> 的稳定读承担。<code>act</code> 因此成为唯一独占写租约的工具，不再被等待中的后续 <code>act</code> 堵在串行队列头。</li>
+  <li><strong><code>observe</code> 读取前稳定读</strong>：连续观察两次直至快照稳定再返回，让模型拿到的是「已经不再变化」的界面，避免因界面动画/布局未落定而取到中间态。</li>
+  <li><strong>调用形状优化</strong>：收紧工具入参与出帧形状，降低单次桌面往返的 IPC 开销与上下文占用。</li>
+  <li><strong>桌面纪律点名 <code>observe</code></strong>：运行纪律中显式要求模型先观察后动作，并补上工具面静态门禁，防止工具面漂移。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong><code>find</code> 空结果不再二义</strong>：此前裸空数组同时表达「不存在 / 未展开 / id 失效」三种处境，模型无从判断该重搜还是该钻取。现在返回体同时给出命中集与覆盖集（<code>coverage.visitedNodeCount</code> 与 <code>scopeNodeCount</code> 用来判定是否「看全」），<code>truncatedRoots</code> 提供可直接抄用的钻取入口，下一步分类统一复用 <code>LocatorNextStep</code>；<code>nth</code> 越界改为显式失败而非返回空。</li>
+  <li><strong><code>find</code> 搜不到自动补深</strong>：浅层无命中时自动往下补一层深度，不再把入口清单甩回给模型自行钻取。</li>
+  <li><strong>骨架裁剪改按字节预算自适应</strong>：不再用固定层数截断，改为按字节预算裁剪，可寻址元素优先保留，被丢弃的元素计数上报，不静默丢信息。</li>
+  <li><strong>截断点不可寻址时向上取祖先</strong>：截断边界若落在不可寻址节点上，改用最近的祖先作为钻取入口，避免给出打不开的定位。</li>
+  <li><strong>深度不再被档位吞掉</strong>：深度默认值提到 24，档位不再覆盖显式深度；截断时错误信息自证所需与实际值。</li>
+  <li><strong><code>pressKey</code> 前台前提补齐（新增 <code>activate</code> 动作）</strong>：<code>pressKey</code> 硬性要求目标 app 在前台，但此前没有任何动作能建立这个前提——<code>act(press)</code> 的五步链全是元素级 AXAction，没有一步会调 <code>NSRunningApplication.activate</code>，实盘表现为返回 <code>delivered_verified</code> 而 <code>affectsFrontmostApp</code> 为 false（声称成功、事实未发生）。新增 <code>activate</code> 动作用把目标 app 提到前台，验证口径以 <code>frontmostApplication</code> 读回为准；<code>pressKey</code> 前台失败时 hint 指向 <code>activate</code>。</li>
+  <li><strong>Electron/Chromium 类应用的 Web 无障碍默认不建</strong>：这类 app 的 Web AX 子树默认不构建（窗口只剩红黄绿三个按钮），<code>observe</code> 现在取窗口树前按<strong>窗口</strong>拉起并回可判定四态（<code>enabled</code> / <code>disabled</code> / <code>unavailable</code> / <code>notApplicable</code>），不再把「原生 App 不适用」与「Web 树没建」合并为同一种失败；判据取 <code>webAreaNodes &gt; 0 &amp;&amp; textNodes &gt; 0</code>，不以 <code>AXError</code> 返回值判成败。</li>
+</ul>
+<h3>性能</h3>
+<ul>
+  <li><strong>设置页快捷键键帽逐颗渲染并改查表贴图</strong>：键帽拆出独立 <code>KeyCap</code> 组件按颗渲染，贴图改为查表复用，两道阴影留在同一个贴图层内一次画完，显著降低按键列表的绘制开销。</li>
+</ul>
+<h3>其它</h3>
+<ul>
+  <li>根目录文档归位到 <code>docs/</code>，移除根目录 <code>NOTICE</code> 的第三方归属登记。</li>
+</ul>
+</body>
+</html>
