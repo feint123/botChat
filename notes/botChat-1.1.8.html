@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.8</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.8</h1>
+<h2>botChat 1.1.8</h2>
+<p>本次更新以主题体系重构为主线：八套内置主题包 + 运行时快照切换、46 语义角色三层 token 体系落地、全库透明度与配色归一；同时带来用量趋势曲线图、副列原生分段页切换、提供方「曾登录过」历史分组，以及桌面操作通道的一组安全修复。</p>
+<h3>新增</h3>
+<ul>
+  <li><strong>主题插件系统，八套内置主题</strong>：新增 paper-warm / linear / apple / raycast / github / dracula / catppuccin / tokyo-night 八套纯数据主题包，设置页可直接选择；切换走运行时快照（不重挂根视图），校验失败整包降级内置默认主题，不会白屏。</li>
+  <li><strong>浅色主题层级翻转</strong>：7 套内置主题浅色侧统一为「纸白画布 + 下沉卡片 + 浮起气泡」的层级关系，明暗对比按 OKLCH 收敛规则校准，深色侧不变。</li>
+  <li><strong>用量趋势图改曲线面积图</strong>：柱状图改为渐隐填充 + 描边的曲线面积图，Token 指标每个活跃维度独立成线、不堆叠；横轴由等距标签改为真实时间轴，hover 吸附最近数据点且浮层不越界。</li>
+  <li><strong>副列页切换改原生分段控件</strong>：工作区副列页点条退役，改为工具栏尾部的原生分段 Picker（段内图标），手势/快捷键翻页时选中段实时跟随。</li>
+  <li><strong>提供方「曾登录过」历史分组</strong>：OAuth 登录与 API key 保存记入本机历史，撤销不清除；登录成功后按 provider 精准刷新模型目录，不再全量重拉。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li><strong>主操作色暖化为金铜</strong>：主按钮与开关由蓝改暖棕金，明暗两侧对比均过 AA；手绘开关与原生 Toggle 着色同源。</li>
+  <li><strong>选中态去品牌彩色</strong>：八套主题的选中底色/描边统一收敛为中性灰阶，彩色只保留给焦点环与品牌元素，选中不再「泛蓝」。</li>
+  <li><strong>控件质感统一</strong>：面板去投影改 1pt 描边，分段控件与胶囊选中态改主色实心，搜索 chip 常态无底（hover 才浮起），全库卡片描边收敛到统一粗细。</li>
+  <li><strong>全库透明度与配色归一</strong>：设置/聊天/设计模式/更改等页面的数百处手写透明度收敛到语义角色三档，同屏 hover 与选中不再同色；系统语义色与阴影字面量收口到主题角色，切主题无残影。</li>
+  <li><strong>分支切换弹层放大一档</strong>：宽度 232→300、行高与字号同步抬升，分支名+上游+时间不再挤成中截断。</li>
+  <li><strong>聊天输入区细节</strong>：上下文环胶囊底色与弹层铺底同源收敛；用户消息气泡去投影改描边，深色主题下不再叠灰。</li>
+  <li><strong>Git 提交详情文件行</strong>：复用与更改列表同一份行实现，四个页签字号不再漂移。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>工作区主/副面板恢复常显分隔线</strong>：两块同色画布相邻读不出边界的问题回归修复，1px 覆盖式分隔线唯一出口收敛，不叠加双线。</li>
+  <li><strong>拖宽手柄高亮不再闪烁</strong>：指针滑出热区时高亮不再被抹掉，拖拽期间常驻。</li>
+  <li><strong>桌面操作安全修复（macUse）</strong>：<code>press</code> 链的候选后代排除窗口红黄绿按钮，杜绝误点关闭按钮关掉用户窗口；全部被排除时如实返回未投递。</li>
+  <li><strong>按键投递不再冒充已响应</strong>：<code>pressKey</code> 支持定向注入目标进程（不要求前台）与系统全局两档；注入后读回焦点与前台应用验证，无变化如实标注「未验证」。</li>
+  <li><strong>新增 launch/activate 桌面原语</strong>：补齐「启动应用」「提到前台」动作，模型不再需要用按键链模拟启动。</li>
+</ul>
+</body>
+</html>

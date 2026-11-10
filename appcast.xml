@@ -3,6 +3,17 @@
     <channel>
         <title>botChat</title>
         <item>
+            <title>1.1.8</title>
+            <pubDate>Tue, 10 Nov 2026 21:44:51 +0800</pubDate>
+            <link>https://github.com/feint123/botChat</link>
+            <sparkle:version>10</sparkle:version>
+            <sparkle:shortVersionString>1.1.8</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.1</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <sparkle:releaseNotesLink>https://feint123.github.io/botChat/notes/botChat-1.1.8.html</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/feint123/botChat/releases/download/updates/botChat-1.1.8.zip" length="52027394" type="application/octet-stream" sparkle:edSignature="Ufs7larXTAjgaf0V3TZnRdOj3N4hIRlg8DRciA+/Ht00kVN4hLPBn/1wHRfiEnGFkt73Xxic6gAx9ZaWk+UdDA=="/>
+        </item>
+        <item>
             <title>1.1.7</title>
             <pubDate>Mon, 09 Nov 2026 23:49:01 +0800</pubDate>
             <link>https://github.com/feint123/botChat</link>
