@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.11</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.11</h1>
+<p>本次更新主线是「多 Agent 并行更稳、输入条两类 chip 同构」：上行帧流改为增量合批，把逐帧开销压成合批后的出站帧率；并发委派的写锁冲突与自动命名静默失败被修掉；输入条 <code>/</code> 技能 chip 按 <code>@</code> 引用同构落地，工具目录改为分层注入 + 按需检索。</p>
+<h3>新增</h3>
+<ul>
+  <li><strong>输入条 <code>/</code> 技能 chip</strong>：与 <code>@</code> 文件引用 chip 同构，共用 inline token 合成、整行尺寸收敛、装饰度量与路径拆分；明文 token 仍是唯一事实源，chip 只作渲染替身。两类 chip 各自保留独立的 token 语法与扫描用途，不合并成一套。</li>
+  <li><strong>工具目录分层与按需检索</strong>：常驻注入收敛到 <code>core</code> 层（缺省 12 个），其余工具标为 <code>extended</code>，由自举入口 <code>tool_search</code> 按需发现；目录说明只回两个数字，注入量与截断名单可观测。总开关 <code>TOOL_CATALOG_TIERING</code> 缺省开启，关闭即回到全量注入、请求体与变更前逐字一致。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li><strong>增量帧合批与节流</strong>：服务端不再把上游每个 delta 原样编成一帧（60+ chunk/s/流 × 4 路约 240 帧/s，单帧 224 B 里 211 B 是包装），改为只合并增量型帧、burst 首帧直通保证首字零回归。一次真实 3 子会话实测：合并比 8.08、出站 12.4 帧/s、字节 ÷8.0、单次 flush 最大 4.1 ms。</li>
+  <li><strong>「自动命名 Agent」改名「后台小模型」</strong>：该槽位实际同时决定会话标题、输入条补全、提交分组方案与读图/打标四条链路用哪个模型，旧名字只解释了四分之一；同时退役启用开关 —— 关掉会让会话永远停在占位标题，模型是否可用本身已足以决定是否调用。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>同轮多路 delegate 报 <code>database is locked</code></strong>：WAL 下 SQLite 只有一把写锁，建任务的「读 → 判定 → 写」多段事务互撞，还会把父会话计数读成旧值再写回。改为内存并发准备、落库经有界 FIFO 单写者通道串行执行，对外仍是并行扇出；顺带修掉此前就存在的丢更新竞态。</li>
+  <li><strong>自动命名静默失败</strong>：一次命名实测 8–21 s，而 hook 只等 8 s，每次都在标题写回前被取消，表现为「起了名但没落库、下一轮重来」。命名改后台任务，客户端兜底补拉改退避重试（2+4+6+8 s），拿到非占位标题即停。</li>
+  <li><strong>桌面纪律 hook 打包后静默失效</strong>：<code>desktop_ops</code> 有真实 hook 却从未在包级注册表声明；内嵌服务端漏收该文件时服务照常启动、<code>/health</code> 照常 200，只是桌面纪律悄悄不再注入。现补进注册表并修正注册基线。</li>
+</ul>
+</body>
+</html>
