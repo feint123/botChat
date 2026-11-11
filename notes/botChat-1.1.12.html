@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.12</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.12</h1>
+<h2>botChat 1.1.12</h2>
+<p>本次更新主线是「跨会话记忆从空壳变成两个能用的文件」：仓库里并存的两套互相矛盾、也都从未通电的旧记忆实现整体移除，改为「两个 Markdown 文件 + 三个生效点」；副列区同时收敛为「一页恒一列」。</p>
+<h3>新增</h3>
+<ul>
+  <li><strong>跨会话记忆落为两个 Markdown 文件</strong>：用户级 <code>~/.botchat/memory/USER.md</code>（缺省上限 1,375 字符）与项目级 <code>&lt;工作区&gt;/.botchat/memory/MEMORY.md</code>（缺省上限 2,200 字符）。真相源是磁盘而不是数据库——可以直接用编辑器改、可以 <code>git diff</code>、可以放进版本库；没有向量库、没有 embedding、不按轮召回。条目之间用独占一行的 <code>§</code> 分隔。</li>
+  <li><strong>记忆注入块</strong>：会话上下文里出现 <code>[MemoryDoc]</code> 块，块头带文件路径与两级使用率（形如 <code>user [3% — 44/1375 chars] | memory [2% — 56/2200 chars]</code>），条目按级分节排在其后。两级都为空时整体不注入，不留空壳；超出预算时截断并显式写明「原文 N 字符、仅注入前 M 字符、全文在哪」，不静默截断。</li>
+  <li><strong><code>memory</code> 写入工具（仅主 Agent 可见）</strong>：三个动作 <code>add</code> / <code>patch</code> / <code>remove</code>——没有 <code>read</code>（内容已在上下文里）、没有 <code>replace</code>（整条覆盖会连带抹掉同一多事实条目里的其它事实）。<code>patch</code> / <code>remove</code> 用短唯一子串定位，命中数不为 1 就直接报错并回当前条目，不猜。现场合成的子 Agent 看不到该工具，连工具名都不可见。</li>
+  <li><strong>写入有门：超限报错逼腾位</strong>：容量按字符计（不折 token 估算），超限不静默截断，返回可决策的错误体——带 <code>current_entries</code>（现有全部条目）、<code>usage</code>（如 <code>2100/2200</code>）与 <code>required_free</code>（还需腾出多少字符）；<code>add</code> 可带 <code>replacing_text</code>，一次原子完成「移除 + 新增」。</li>
+  <li><strong>收尾自动归档</strong>：每轮结束时后台抽取一条候选（<code>outcome</code> / <code>failure</code> / <code>lesson</code>），过质量门后<strong>直接调用存储层写入</strong>，不经模型调工具——因此不会出现「回复里写了『已加入记忆』但其实没存」。只归档主 Agent 的收尾轮，同一会话同一时刻最多一个归档任务；容量不足时放弃该候选，不删既有条目腾位。</li>
+  <li><strong><code>POST /api/memory/refresh</code> 显式刷新</strong>：重读磁盘并冻结成新快照，响应里如实给出两级使用率与是否真的重建。一次刷新同时更新 <code>[MemoryDoc]</code> 与 <code>[ProjectDoc]</code>（AGENTS.md），避免出现「记忆是新的、协作规范还是上一版」。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li><strong>记忆生效点只有三处</strong>：新会话、压缩锚点之后（当前未启用）、显式刷新。写入立即落盘，但不改变本轮已经发出的 prompt——改完文件发现不生效，先确认是否到了生效点，这是设计选择而非 bug。记忆块内不含时间戳、轮次号、run_id 等逐轮变量，跨轮逐字节稳定，不影响前缀缓存。</li>
+  <li><strong>落盘前的安全扫描</strong>：记忆会进 system prompt 且跨会话持久，落盘前扫三类红线——prompt 注入模式、凭据外泄模式、不可见/双向控制字符；命中即拒收并回报命中类别。只扫本次新增或修改的内容，不重扫既有条目，否则一个被手写投毒的文件连 <code>remove</code> 都写不进去，自救路径会自己堵死。</li>
+  <li><strong>副列区一页恒一列</strong>：此前副列区宽过约 609pt 就会并排显示两列，现在恒定一列，多出来的副面板走既有分页（页点条 / 横滑）访问，不再需要同时读两处。列组与布局预设不受影响（结构层仍允许多列共存，只是同一屏只显示一个），同一组的多列可被分页拆开。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>跨会话记忆此前从未通电</strong>：旧实现里 <code>memory_entry</code> 表零读写调用方、<code>/api/memory</code> 的四个端点落在进程内字典（重启即空）、客户端等的 <code>memory_update</code> 事件两端都不存在、客户端记忆面板也没有装配点——链路整体悬空，同时又并存着两条方向相反的废弃路线（bash MCP 自管 / 每轮召回），谁也裁决不了。本轮清掉旧地基按上述模型重建。</li>
+  <li><strong>按会话清理记忆的死分支</strong>：<code>memory_entry</code> 没有 <code>conversation_id</code> 列，按会话级联清理记忆的分支一直抛 <code>AttributeError</code> 并被 <code>except Exception: pass</code> 静默吞掉。表已删除（迁移 <code>j3c4d5e6f7a8</code>），该分支与模型一并移除。</li>
+</ul>
+<h3>移除</h3>
+<ul>
+  <li>旧记忆体系的 REST 面：<code>GET /api/memory</code>、<code>POST /api/memory/recall</code>、<code>POST /api/memory</code>、<code>GET /api/memory/namespaces</code> 四个端点全部删除，不留兼容门面；记忆的读写改为「直接编辑两个 Markdown 文件 + <code>memory</code> 工具」，REST 面只保留「改完的文件生效」这一个动作。</li>
+  <li>客户端记忆面板与其依赖（<code>MemoryPanelView</code> / <code>MemoryService</code> / <code>LocalMemoryService</code> / <code>MemoryEntry</code> 及本地 SwiftData 镜像容器）一并移除——这套 UI 此前没有装配点，用户侧无可见入口，记忆内容请用文件浏览/预览面板直接看磁盘上的两个 Markdown。</li>
+  <li><code>memory_entry</code> 表的移除随服务端启动时自动执行的数据库迁移完成，无需手工操作（自建部署且设了 <code>SKIP_MIGRATIONS=1</code> 的环境需自行执行 <code>alembic upgrade head</code>）。</li>
+  <li><code>memory</code> 工具属常驻 <code>core</code> 层，<code>TOOL_CATALOG_CORE_LIMIT</code> 缺省值由 12 抬到 13——否则它会按声明序被静默截断（实测被丢弃的正是 <code>memory</code>）。关闭 <code>MEMORY_ENABLED</code> 时该工具不出现在任何工具清单中，且零读盘、零注入。</li>
+</ul>
+</body>
+</html>
