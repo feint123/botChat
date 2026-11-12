@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.13</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.13</h1>
+<h2>botChat 1.1.13</h2>
+<p>本次两支主线：空态从「静态欢迎页」变成有内容的一面墙（活跃热力图 + 每日生成的建议），以及出站边界新增一层可选的凭据脱敏；此外是对 1.1.12 跨会话记忆的审查收尾，与热力图落地后暴露的两处真故障修复。</p>
+<h3>新增</h3>
+<ul>
+  <li><strong>空态活跃热力图</strong>：按自然日展示你的发言条数，连续与空档一眼可辨；数据由服务端按日物化（缺省每 15 分钟重算「过去 7 天 + 今天」，时区缺省 <code>Asia/Shanghai</code>），接口只读汇总表、请求内不做聚合。</li>
+  <li><strong>热力图零请求渲染</strong>：客户端渲染路径直接读本机日缓存，不发任何请求；可见期间不替换已画出的快照，图和文案不会自己跳一下。</li>
+  <li><strong>出站凭据脱敏（默认关）</strong>：请求发出前把会话内容里的私钥块、供应商 key、JWT、URL 凭据、<code>.env</code> 赋值、邮箱、卡号、身份证换成可逆占位符 <code>BOTCHAT_SECRET_*</code>，回程再还原成真实值；规则全在本地、零出网。</li>
+  <li><strong>设置 → 隐私</strong>：脱敏开关加「试算预览」——粘贴一段文本（<code>.env</code> 行、连接串、日志片段均可）即可看到真实链路上模型会看到什么，只回掩码后的文本与命中类型计数，不回任何原值。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li><strong>空态建议胶囊改为按日生成</strong>：不再由「项目名 / 分支 / 未提交」三句固定话术派生，改为小模型按工作目录每天生成一次（输入是项目、前一天的会话摘要、近 24h 提交与当天日期节日）；合格条目不足 3 条就整批作废，回落到内置的热门提示词池。</li>
+  <li><strong>胶囊改两段契约</strong>：显示的是短标题（不超过 16 字），点击填入的是完整稿；仍只填入、不自动发送。</li>
+  <li><strong>胶囊布局响应式</strong>：宽档横排居中、窄档竖排左对齐，切换阈值带 48pt 滞回，拖动窗口时不会来回抖。</li>
+  <li><strong>新增「Composer 建议」开关</strong>：可关掉小模型生成、只用固定热门提示词，界面上写明会发出哪些信号。</li>
+  <li><strong>努力度电弧齿距修正</strong>：high 档原先齿距密到相邻齿被光晕填满、读作一条噪点带，现按归一化宽度锚定全宽周期数，齿数恒定，采样密度由 5pt 提到 2pt。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>热力图在默认列宽下只能看到约 56%</strong>：内容宽原写死 608.5pt，而对话列默认可用宽只有 339pt，横向滚动条又被隐藏，于是全年被裁、图例只剩「未活跃」三字，最大化窗口也不会变宽（列宽是持久化值）。现在几何按可用宽求解，只有把列拖到 320pt 下限才需要滚动，而那种情况下滚动条可见、不再把「被裁」伪装成设计。</li>
+  <li><strong>热力图与输入条左右不对齐</strong>：此前热力图铺满整个对话列、首末列被列边界切掉；留白改由组件自己按与 composer 同源的 12pt 处理，两侧像素级对齐。</li>
+  <li><strong>热力图顶栏随格阵被滚走</strong>：统计三元组与图例移出滚动内容，宽度取可见块宽而非内容宽；月份标签仍与格阵同处一段滚动内容，避免滚动时与列错位。</li>
+  <li><strong>内嵌服务端跑 SQLite 时热力图一行数据也没有</strong>：日界折算只按 Postgres 的 <code>AT TIME ZONE</code> 写，SQLite 上每轮都失败；现按方言分支，并补上 SQLite <code>date()</code> 返回字符串的解析。已知偏差：区间跨 DST 切换时边界日差一小时（内嵌默认时区无 DST）。</li>
+  <li><strong>内嵌服务端换端口后空态取数落空</strong>：客户端 store 持有了启动时拍下的地址快照，而后端真实端口是随后写入的；取数改为每次新建服务（工厂注入），sidecar 换端口后自愈。</li>
+  <li><strong>满容量的合法记忆必然显示「已截断」</strong>：截断预算改按条目字符判定，块头、分节标题与 <code>§</code> 分隔行这些固定开销不再算进任何一级的容量。</li>
+  <li><strong>记忆写入的三处语义漏洞</strong>：<code>patch</code> 现在要求给出改写后的完整条目（此前给片段会连带抹掉同一条里的其它事实）、未知 <code>action</code> 显式失败（此前会落进 <code>patch</code> 分支并「成功」整条覆盖）、内容含 <code>§</code> 分隔符直接拒绝（一条会落成多条，且此后无法再定位）。</li>
+  <li><strong>容量报错误导判断</strong>：错误体里的 <code>usage</code> 改报当前占用（此前装的是写入后的预测值，看到 <code>2352/2200</code> 会误判成「库已经爆了」），并带千分位与实时配置的上限。</li>
+  <li><strong>收尾归档的两处丢数据</strong>：归档输出预算独立为 1024（沿用标题链的 256 会把 JSON 数组截断成非法 JSON 而整批丢弃）；同一会话归档未结束时又收到收尾，不再直接丢弃候选，改为排队补跑一次。</li>
+  <li><strong>记忆护栏的漏检</strong>：中文注入词各段之间带空白的最平凡变体此前漏检；补上 Google API key、JWT、<code>Authorization: Bearer</code>、带口令的连接串、改写 <code>authorized_keys</code> 的 SSH 后门五类凭据；不可见字符区间扩到 TAG 字符与变体选择符。</li>
+  <li><strong>记忆注入的第四条生效路径</strong>：快照读不懂时（<code>extra_metadata</code> 为 NULL 或结构非法）此前被折成 <code>None</code>，下一跳就落进「新会话」分支，每次读盘覆盖已冻结的快照、打穿整个会话的前缀缓存；现在读不懂就零注入。</li>
+  <li><strong>记忆文件可能被符号链接劫持</strong>：<code>os.replace</code> 会把链接本身换成普通文件，此后每次「成功」写入都落在没人编辑的新文件上，用户手改真文件也不再被注入；现在直接拒绝符号链接。</li>
+  <li><strong>删陈旧锁会误删别人的锁</strong>：锁改按 inode 复核，释放前只删自己建的那把，不再让第三个写者立刻入场。</li>
+</ul>
+<h3>其他</h3>
+<ul>
+  <li><code>memory</code> 内置 MCP server 与 <code>skills/memory-via-bash</code>（用 bash 手改记忆文件的旧办法）一并下线，记忆只走 <code>memory</code> 工具与直接编辑两个 Markdown 文件两条路。</li>
+  <li><code>MEMORY_*</code> 配置语义归位：<code>MEMORY_ENABLED</code> 明确为含收尾归档的总闸，<code>MEMORY_TOKEN_LIMIT</code> 回归「模型窗口未知时的兜底」；<code>.env.example</code> 换成真实的键名。</li>
+  <li>新增三份迁移（<code>activity_day</code> 表、<code>empty_state_suggestion</code> 表、<code>outbound_masking</code> 设置行），随服务端启动自动执行，无需手工操作；自建部署且设了 <code>SKIP_MIGRATIONS=1</code> 的环境需自行执行 <code>alembic upgrade head</code>。</li>
+</ul>
+</body>
+</html>
