@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.14</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.14</h1>
+<h2>botChat 1.1.14</h2>
+<p>本次两支主线：插件体系从「能跑」变成「能看见、能装、能开关」；工具分层补上第二段调用入口——被 <code>tool_search</code> 发现的工具，终于能在同一轮里真正被调用。</p>
+<h3>新增</h3>
+<ul>
+  <li><strong>插件体系 P0+P1</strong>：插件代码跑在独立宿主子进程，主进程只保留装配层与工具表；清单 v2 协议、沙箱与审计、三轨工具注册（本地 / MCP / 插件）、启用态落库与重启恢复。扫描与登记零代码执行，第三方插件需显式授权后才真正运行。</li>
+  <li><strong>设置 → 插件页</strong>：三分区列表（已启用 / 未启用 / 已移除登记残留）与插件详情——版本、信任档与降级原因、root 与包路径、能力、激活事件、三态授权矩阵、工具、逐条诊断；支持安装（选本机目录）、启停、逐项授权、删除、清登记、宿主重启、解除拉黑。</li>
+  <li><strong><code>tool_invoke</code> 代理工具</strong>：与 <code>tool_search</code> 成对注册，模型可凭名字在同一轮内调用此前只被发现的工具；未知工具名最多给出 3 个近似候选，单条失败不中断同批调用。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li><strong>工具检索面口径修正</strong>：从「tier 等于 extended」改为「本次未进入 <code>tools</code> 数组」，被 <code>core_limit</code> 截断的核心工具重新可达，不再出现「能搜到、调不了」。</li>
+  <li><strong>统一执行路径</strong>：执行器抽出 <code>execute_resolved</code>，代理调用复用同一条路径——预检、超时、<code>patch</code> 透传、并发额度、<code>tool_cancel</code> 全部一致，不重复抢占并发额度。</li>
+  <li><strong>插件安装与删除边界</strong>：安装只收本机绝对目录，先复制到 <code>.staging</code> 再原子落位；删除一律移入 <code>.trash/</code> 而非直接删，授权保留。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>插件启用偶发 <code>database is locked</code></strong>：同一请求内两个会话写同一 SQLite 文件，启用路由改为先提交再接线；接线失败日志带异常首行，诊断文案改指「重启宿主」，避免用户循环踩同一个坑。</li>
+  <li><strong>插件设置页报错态撑破布局</strong>：内容理想高度曾达 1142pt，把顶部横幅与列表顶出可视区，根部容器改为钉住尺寸。</li>
+</ul>
+<h3>其他</h3>
+<ul>
+  <li><strong>内部测试基建</strong>：工具目录基线比对改为关系式不变量、退役 129KB 冻结快照——改坏映射必红、只改工具描述必绿；生产代码零改动。</li>
+  <li><strong>迁移提示</strong>：扩展状态表迁移 <code>n7a8b9c0d1e2</code> 随包发布；若用 <code>SKIP_MIGRATIONS=1</code> 启动嵌入式服务，需自行执行 <code>alembic upgrade head</code>。</li>
+  <li>新增三份跨块文字选取与「引用聊天文字」调研文档，零代码改动。</li>
+</ul>
+</body>
+</html>
