@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.16</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.16</h1>
+<h2>botChat 1.1.16</h2>
+<h3>插件图标从「可声明」变成「会显示」</h3>
+<ul>
+  <li>插件清单里的 <code>client.view.icon</code> 现在会真正渲染：填一个 SF Symbol 名，面板、窗口、侧栏分区、输入条配件与设置页就能带上自己的标记；五类挂载点及其菜单、页签入口统一走同一个渲染入口。</li>
+  <li>未填或写错图标时，按挂载点回落到系统缺省符号，只在诊断里记一条 <code>iconSymbolMissing</code>，不会让该面板或插件消失。</li>
+  <li>服务端只校验图标名的形状（长度、空白、路径分隔符），不维护任何符号名单；符号是否真实存在由客户端按当前 macOS 的 SF Symbols 判定。</li>
+  <li>图标的尺寸与着色由宿主按界面语境决定，清单里只能写符号名，不能携带像素、字重或颜色。</li>
+</ul>
+<h3>原生面板</h3>
+<ul>
+  <li>编译期 import 白名单放行 <code>AVKit</code> 与 <code>AVFoundation</code>，原生面板可以承载媒体播放能力。</li>
+</ul>
+<h3>其它</h3>
+<ul>
+  <li>插件面板列按职责拆分为文案、占位视图与装配三部分，行为不变，便于维护与回归锁定。</li>
+</ul>
+</body>
+</html>
