@@ -4,7 +4,8 @@
 // 编成 bundle，再按需加载出实例。契约见 docs/extension-panel-native.md。
 //
 // 三件事最容易写错，刻意保留在模板里：
-//   1. 入口类名必须逐字 `@objc(BotChatPanelEntry)`，否则宿主报 nativeEntryMissing；
+//   1. 入口 MUST 用 `@_cdecl("botchat_panel_entry")` 导出**一次**，MUST NOT 给入口类挂固定 ObjC 类名
+//      （`@objc(固定名)` 已废弃：类名是进程级全局命名空间，同进程第二个面板拿不到自己的类）；
 //   2. 实例**持有** NSHostingView，update(data:) 只换 rootView —— 每次重建会让 @State 全丢；
 //   3. 取色只经 host.panelColor(角色名)，不写字面色，也不自己缓存 NSColor。
 //
@@ -14,11 +15,17 @@
 import AppKit
 import SwiftUI
 
-@objc(BotChatPanelEntry)
-final class MainPanelEntry: NSObject, PanelEntry {
+struct MainPanelEntry: PanelEntry {
     static func makeInstance(host: PanelHost) -> PanelInstance {
         MainPanelInstance(host: host)
     }
+}
+
+/// 入口导出：宿主按符号 `botchat_panel_entry` 取它（按镜像解析，不按类名查表）。
+/// 一个面板源文件只能导出一次本符号；MUST NOT 给入口类挂固定 ObjC 类名。
+@_cdecl("botchat_panel_entry")
+public func mainPanelEntry(_ hostRaw: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer? {
+    botchatPanelInstance(MainPanelEntry.self, hostRaw)
 }
 
 final class MainPanelInstance: NSObject, PanelInstance {

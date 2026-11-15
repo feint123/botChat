@@ -68,9 +68,12 @@ protocol PanelHost: AnyObject {
 }
 
 protocol PanelInstance: AnyObject { var rootView: NSView { get }; func update(data: NSDictionary) }
-protocol PanelEntry: NSObjectProtocol { static func makeInstance(host: PanelHost) -> PanelInstance }
+protocol PanelEntry { static func makeInstance(host: PanelHost) -> PanelInstance }   // 入口类型可为 struct / enum
 
 extension PanelHost { func panelColor(_ role: String) -> Color }   // 取色捷径
+
+// 入口装配助手：入口函数里只需把「自己的入口类型 + 宿主指针」交给它
+func botchatPanelInstance<E: PanelEntry>(_ entry: E.Type, _ hostRaw: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer?
 
 struct PanelData {                     // 容错取值，缺字段给缺省
     init(_ raw: NSDictionary)
@@ -83,8 +86,25 @@ struct PanelData {                     // 容错取值，缺字段给缺省
 }
 ```
 
-宿主用 `dlsym("botchat_panel_entry")` → `NSClassFromString("BotChatPanelEntry")` 找入口，
-所以**入口类名必须逐字** `@objc(BotChatPanelEntry)`；写错即 `nativeEntryMissing`（不是白屏）。
+**入口：一次 `@_cdecl` 导出，不挂固定类名**（一个面板源文件只能导出一次）：
+
+```swift
+struct MainPanelEntry: PanelEntry {
+    static func makeInstance(host: PanelHost) -> PanelInstance { MainPanelInstance(host: host) }
+}
+
+/// 宿主按符号 `botchat_panel_entry` 取它（按镜像解析，不按类名查表）。
+@_cdecl("botchat_panel_entry")
+public func mainPanelEntry(_ hostRaw: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer? {
+    botchatPanelInstance(MainPanelEntry.self, hostRaw)
+}
+```
+
+宿主只认这个 **C 符号**（`dlsym`），MUST NOT 给入口类型挂固定 ObjC 类名 —— `@objc(BotChatPanelEntry)`
+这类写法已被门禁拒（`nativeSourceRejected`，文案「入口类名固定（已废弃写法）」）：类名是**进程级全局
+命名空间**，ObjC runtime 对同名类只注册先到者，同进程第二个面板必然拿不到自己的类（入口直接返 nil）。
+符号按镜像解析、类名完全由你自选，因此多面板共存与同一插件多版本共存都不撞。缺符号或入口返空 ⇒
+`nativeEntryMissing`（不是白屏）；导出两次是链接期重复符号 ⇒ `nativeCompileFailed`。
 
 ## 五、五条纪律
 
@@ -101,9 +121,10 @@ struct PanelData {                     // 容错取值，缺字段给缺省
 
 | 规则 | 取值 |
 |---|---|
-| 允许的 import | `SwiftUI` `AppKit` `Foundation` `Observation` `CoreGraphics` |
+| 允许的 import | `SwiftUI` `AppKit` `Foundation` `Observation` `CoreGraphics` `AVKit` `AVFoundation` |
 | 禁用符号（子串匹配，**注释里出现也算**） | `FileManager` `URLSession` `URLRequest` `Process(` `NSTask` `NSAppleScript` `NSWorkspace` `dlopen` `dlsym` `SecItem` `CGEvent` `AXUIElement` `NSWindow(` `NSPanel(` |
 | 写死颜色 | `Color(red:` / `Color( red:` / `NSColor(calibrated` / `NSColor(srgb`；或同行含 `Color(`／`NSColor(`／`cgColor` 且出现六位十六进制 |
+| 入口写法 | 入口挂固定 ObjC 类名（`@objc(固定名)`）⇒ 命中「入口类名固定（已废弃写法）」，改用 `@_cdecl("botchat_panel_entry")` |
 | 体积 / 行数 | ≤256 KB / ≤4000 行 |
 
 误报口径（实测）：`"#hashtag"`、`ticket 0x1F`、`Color(nsColor: host.color(...))` **都不命中**。

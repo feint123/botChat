@@ -111,7 +111,9 @@ python3 $SKILL/scripts/scaffold_plugin.py --id acme.hello --name "我的面板" 
 
 - 工具：`templates/tool/tools.py.tpl` 的形状 —— `register(ctx)` 里 `ctx.tool(name, handler, description=, input_schema=)`。
 - IR 面板：`register(ctx)` 里 `ctx.view(name, handler)` / `ctx.command(id, handler)`，handler 收 `payload` 回**整棵树**。
-- 原生面板：视图函数回**数据对象**（不是树），界面写包内 `Panels/*.swift`，入口类名逐字 `@objc(BotChatPanelEntry)`。
+- 原生面板：视图函数回**数据对象**（不是树），界面写包内 `Panels/*.swift`；入口 MUST 用
+  `@_cdecl("botchat_panel_entry")` 导出**一次**，MUST NOT 给入口类挂固定 ObjC 类名（`@objc(固定名)`
+  已被门禁拒：类名是进程级全局命名空间，同进程第二个面板拿不到自己的类）。
 
 **声明与注册必须逐字对得上**（这是最高频的翻车点）：
 
@@ -220,7 +222,8 @@ doctor 的口径必须看懂：它只做**静态**判定（entry 文件存在且
 | 插件在、启用后没反应 | 宿主没重扫/没激活（装配层只在启动、启用、`host/restart` 时激活） | `POST /api/extensions/host/restart`，再看该行诊断 |
 | 面板空白 / 显示占位 | 树非法（`irInvalid`）或超预算（`irBudgetExceeded`） | 用服务端 `ui_ir.validate(tree)` 本地复现，看 `code` + `path` |
 | 点了按钮界面不变 | 交互分支回了和上次**逐字相同**的树（本通道无 patch） | 让返回值带上变化量（计数、时间、状态） |
-| 面板一片报错 / `nativeEntryMissing` | `@objc(BotChatPanelEntry)` 写错、entry 路径不在包内、`apiVersion` ≠ 1 | 包内 `.swift` 入口类名与清单 `client.panel.entry` |
+| 面板一片报错 / `nativeSourceRejected`（「入口类名固定（已废弃写法）」） | 入口还挂着 `@objc(BotChatPanelEntry)` 之类固定类名 | 删掉该注解，改用 `@_cdecl("botchat_panel_entry")` 导出入口 |
+| 面板一片报错 / `nativeEntryMissing` | 没导出 `@_cdecl("botchat_panel_entry")`（写错 / 导出两次 / entry 路径不在包内）、`apiVersion` ≠ 1 | 包内 `.swift` 的入口导出与清单 `client.panel.entry` |
 | 原生面板编译失败 | 用了门禁 API（出网/文件/子进程/dylib 相关）或不是 bundle 友好代码 | 只经 `data` 取数、只经 `host.dispatch` 动作 |
 | 工具「存在但模型看不到」 | 插件工具缺省 `extended` | 让 Agent 先 `tool_search`；或把能力目录里该工具启用 |
 | 工具调用报 `permissionDenied` | 清单请求了但没授权 / 渲染期写盘 / 路径越界 | `extension_state.permissions_json` 与路径前缀 |

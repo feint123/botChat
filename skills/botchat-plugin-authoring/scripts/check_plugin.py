@@ -161,6 +161,12 @@ def _gate_panel_source(source: str) -> list[str]:
             problems.append(f"第 {number} 行：写死了颜色（{trimmed[:40]}）")
         elif any(hint in line for hint in _PANEL_COLOR_HINTS) and _HEX_PATTERN.search(line):
             problems.append(f"第 {number} 行：写死了十六进制色值")
+        if "@objc(BotChatPanelEntry)" in line:
+            problems.append(
+                f"第 {number} 行：入口类名固定（已废弃写法）"
+                "（固定类名会让同进程第二个面板拿不到自己的类；"
+                "删掉该注解，改用 @_cdecl(\"botchat_panel_entry\") 导出入口）"
+            )
     return problems
 
 

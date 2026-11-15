@@ -62,7 +62,7 @@
 | 起步 · 闭环 | `python3 $SKILL/scripts/scaffold_plugin.py --mode native --slot <slot> --dir ~/dev/plugins --id <id>`；闭环 = 门禁预检 → `validate_panel_data(...)` → 装/启用/重启 → 点按钮数字变且滚动与输入状态留住。 |
 | 代价与坑 | 编译链代价：首次挂载 `swiftc -Onone` 约 0.83s、**不是沙箱**（门禁只挡误用与主题腐烂）、编译失败用户只见占位、无工具链报 `nativeToolchainMissing`（同包 IR 视图照常工作）。 |
 
-三处声明必须同时成立，缺一条即撤下：`client.view.render = "native"`、`client.panel.views[].view` 同名、`server.ui.views` 含该 view。`apiVersion` 只认 `1`；`entry` 是包内相对路径、`.swift`、**单文件 ≤256 KB**（≤4000 行）；入口类名逐字 `@objc(BotChatPanelEntry)`。`PanelSourceGate` 门禁：import 只许 `SwiftUI` / `AppKit` / `Foundation` / `Observation` / `CoreGraphics`；禁用符号子串匹配（`FileManager` `URLSession` `Process(` `NSTask` `dlopen` `NSWindow(` …，**注释里出现也算**）；写死颜色一律拒。
+三处声明必须同时成立，缺一条即撤下：`client.view.render = "native"`、`client.panel.views[].view` 同名、`server.ui.views` 含该 view。`apiVersion` 只认 `1`；`entry` 是包内相对路径、`.swift`、**单文件 ≤256 KB**（≤4000 行）；入口 MUST 用 `@_cdecl("botchat_panel_entry")` 导出恰好一次，MUST NOT 给入口类挂固定 ObjC 类名（`@objc(固定名)` 已被门禁拒，报「入口类名固定（已废弃写法）」）。`PanelSourceGate` 门禁：import 只许 `SwiftUI` / `AppKit` / `Foundation` / `Observation` / `CoreGraphics` / `AVKit` / `AVFoundation`；禁用符号子串匹配（`FileManager` `URLSession` `Process(` `NSTask` `dlopen` `NSWindow(` …，**注释里出现也算**）；写死颜色一律拒。
 
 ```json
 // <id>/manifest.json + <id>/plugin.py（视图回「数据对象」）+ <id>/Panels/Main.swift（写界面）

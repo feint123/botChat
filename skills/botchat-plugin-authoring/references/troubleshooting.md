@@ -72,11 +72,11 @@
 
 | 码 | 含义 | 改哪里 |
 |---|---|---|
-| `nativeSourceRejected` | 源码门禁命中 | 按 `native-panel.md` §六 逐条改；**注释里出现禁用词也算** |
-| `nativeEntryMissing` | 找不到入口（`@objc(BotChatPanelEntry)` 写错 / entry 指向的文件不在包里 / 客户端用了自己拼的根路径） | 改类名与 `client.panel.entry`；包根只认服务端下发的 `roots` |
+| `nativeSourceRejected` | 源码门禁命中 | 按 `native-panel.md` §六 逐条改；**注释里出现禁用词也算**；入口挂固定类名也归这里（文案「入口类名固定（已废弃写法）」） |
+| `nativeEntryMissing` | 找不到入口（没导出 `@_cdecl("botchat_panel_entry")` / 导出两次 / entry 指向的文件不在包里 / 客户端用了自己拼的根路径） | 改入口导出与 `client.panel.entry`；包根只认服务端下发的 `roots` |
 | `nativeToolchainMissing` | 本机没有 `swiftc` | 装 Xcode Command Line Tools；同插件 IR 视图仍可用 |
 | `nativeCompileFailed` | 编译失败（只回含 `error:` 的行） | 看那几行；常见是没有 `import SwiftUI`／用了 `@State` 却每次重建视图 |
-| `nativeLoadFailed` | bundle 加载失败 | 多半是模块名/类名冲突：确保入口类名唯一且用 `@objc(BotChatPanelEntry)` |
+| `nativeLoadFailed` | bundle 加载失败 | 多半是模块名/类名冲突：入口 MUST 是 `@_cdecl("botchat_panel_entry")` 导出一次、入口类型不得挂固定 ObjC 类名 |
 | `nativeConsentDeclined` | 用户没同意编译运行该面板 | 是人的选择，不是 bug |
 
 ## 三、真实踩坑（每条都对应一次实际问题）

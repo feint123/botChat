@@ -28,11 +28,20 @@
 import AppKit
 import SwiftUI
 
-@objc(BotChatPanelEntry)
-final class TodoPanelEntry: NSObject, PanelEntry {
+struct TodoPanelEntry: PanelEntry {
     static func makeInstance(host: PanelHost) -> PanelInstance {
         TodoPanelInstance(host: host)
     }
+}
+
+/// 入口导出：宿主按符号 `botchat_panel_entry` 取它（符号按镜像解析）。
+///
+/// MUST NOT 给入口类挂固定的 ObjC 类名（`@objc(固定名)` 注解已废弃）—— 类名是进程级全局命名空间，
+/// 只认先注册者，同进程第二个原生面板会拿不到自己的类（入口直接返 nil）。
+/// 一个面板源文件只能导出一次本符号。
+@_cdecl("botchat_panel_entry")
+public func todoPanelEntry(_ hostRaw: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer? {
+    botchatPanelInstance(TodoPanelEntry.self, hostRaw)
 }
 
 final class TodoPanelInstance: NSObject, PanelInstance {
