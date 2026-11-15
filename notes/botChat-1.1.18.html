@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.18</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.18</h1>
+<h2>botChat 1.1.18</h2>
+<p>本次主线：<strong>插件视图的连接可靠性修好了，定时任务行也能直接右键操作</strong>。execute 工具在时间线上不再只显示一行摘要，展开能看到真正跑过的代码。</p>
+<h3>定时任务：右键就能改、停、删</h3>
+<ul>
+  <li><strong>侧栏任务行支持右键菜单</strong>：暂停/恢复、立即运行、编辑、删除。菜单只作用于你点的那一行，不会误操作到当前选中的别的任务。</li>
+  <li><strong>暂停中的任务与执行中的写动作用置灰而不是隐藏</strong>：入口仍然可见，只是暂时点不动，不会出现「找不到怎么恢复」的情况。</li>
+  <li><strong>侧栏与任务详情共用同一份忙态</strong>：一边正在暂停或删除时，另一边的同名动作会同步置灰，不会两处同时改动同一条任务。</li>
+  <li><strong>删除需要二次确认</strong>：删除失败时该行保留并给出提示，不会出现界面上没了、服务端还在的错觉。</li>
+</ul>
+<h3>插件视图：冷启动、断流重连、退出三处修复</h3>
+<ul>
+  <li><strong>冷启动不再空白</strong>：服务未就绪时先等就绪通知，拿到可用地址后再加载视图。</li>
+  <li><strong>空闲断流后能自己恢复</strong>：重连时若已有可渲染内容就直接回到就绪态，不再额外请求一次快照；确实没有内容才去拉取。</li>
+  <li><strong>正常退出不再被误判为崩溃</strong>：退出时清掉未完成的加载记录，只有真正的崩溃或强杀才标记为疑似崩溃。</li>
+</ul>
+<h3>execute 工具行：看得到真正跑过的代码</h3>
+<ul>
+  <li><strong>折叠态给等宽摘要</strong>：显示「N 行 · 首行有效代码」，自动跳过 import、注释、main 定义等样板行；全是注释或空代码时不出摘要。</li>
+  <li><strong>展开态直接显示代码</strong>：按 40 行 / 每行 400 字符 / 合计 8000 字符切片，超出部分给出省略量，并保留唯一入口查看全文。</li>
+  <li><strong>execute 有了独立图标</strong>：不再和 bash 共用同一个符号。</li>
+</ul>
+<h3>工具提示契约收紧</h3>
+<ul>
+  <li><strong>execute 描述补齐四条硬约束</strong>：print 不回流、缺 main 时成功返回 null、返回值必须能序列化成 JSON、未 await 的调用没有结果。</li>
+  <li><strong>工具面策略段改为按真实注册的工具注入</strong>：与分层策略解耦；目录说明改成「本次未下发的全部工具都可检索」，与 tool_search 的实际能力保持一致。</li>
+</ul>
+<h3>其他</h3>
+<ul>
+  <li>两份额外提案入库（出站掩码规则、Python 编排型 execute 模式），属于后续能力的前置文档，不影响本版行为。</li>
+</ul>
+</body>
+</html>
