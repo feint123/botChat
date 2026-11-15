@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.todo-list",
+  "name": "待办清单",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": [
+    "onSlot:panel:main",
+    "onCommand:examples.todo-list.open",
+    "onTool:todo_list",
+    "onTool:todo_add",
+    "onTool:todo_done",
+    "onTool:todo_remove"
+  ],
+  "permissions": {
+    "fs.read": [
+      "~/.botchat/todos"
+    ],
+    "fs.write": [
+      "~/.botchat/todos"
+    ]
+  },
+  "capabilities": {
+    "server.ui": {
+      "entry": "plugin.py",
+      "views": [
+        "main",
+        "settings"
+      ]
+    },
+    "client.panel": {
+      "views": [
+        {
+          "view": "main",
+          "entry": "Panels/Todo.swift",
+          "apiVersion": 1
+        }
+      ]
+    },
+    "server.tool": {
+      "entry": "plugin.py",
+      "tools": [
+        "todo_list",
+        "todo_add",
+        "todo_done",
+        "todo_remove"
+      ]
+    },
+    "client.view": [
+      {
+        "slot": "panel",
+        "view": "main",
+        "title": "待办清单",
+        "icon": "checklist",
+        "priority": 20,
+        "render": "native"
+      },
+      {
+        "slot": "settings.section",
+        "view": "settings",
+        "title": "待办清单设置",
+        "icon": "gearshape.2"
+      }
+    ],
+    "client.command": {
+      "id": "examples.todo-list.open",
+      "title": "查看待办清单"
+    }
+  }
+}

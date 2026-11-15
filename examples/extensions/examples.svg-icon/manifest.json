@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.svg-icon",
+  "name": "SVG Icon（样例插件）",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": [
+    "onSlot:panel:main"
+  ],
+  "permissions": {},
+  "capabilities": {
+    "server.ui": {
+      "entry": "ui.py",
+      "views": [
+        "main",
+        "badge",
+        "about"
+      ]
+    },
+    "client.view": [
+      {
+        "slot": "panel",
+        "view": "main",
+        "title": "SVG 图标（template）",
+        "icon": {
+          "svg": "Icons/mark.svg"
+        },
+        "priority": 20
+      },
+      {
+        "slot": "sidebar.section",
+        "view": "badge",
+        "title": "SVG 图标（original）",
+        "icon": {
+          "svg": "Icons/gradient.svg",
+          "tint": "original"
+        },
+        "priority": 20
+      },
+      {
+        "slot": "settings.section",
+        "view": "about",
+        "title": "SVG 图标（非方 viewBox）",
+        "icon": {
+          "svg": "Icons/wide.svg",
+          "tint": "template"
+        }
+      }
+    ]
+  }
+}

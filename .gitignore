@@ -4,3 +4,7 @@ web/dist/
 .vite/
 *.log
 .env.local
+
+# Python 缓存产物（skills 内脚手架脚本的运行残留）
+__pycache__/
+*.py[cod]

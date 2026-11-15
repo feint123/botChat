@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.hello-tool",
+  "name": "Hello Tool（样例插件）",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": ["onTool:hello"],
+  "permissions": {},
+  "capabilities": {
+    "server.tool": {
+      "entry": "tools.py",
+      "tools": ["hello"]
+    }
+  }
+}

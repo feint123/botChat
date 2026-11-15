@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.hello-panel",
+  "name": "Hello Panel（样例插件）",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": [
+    "onSlot:panel:main"
+  ],
+  "permissions": {},
+  "capabilities": {
+    "server.ui": {
+      "entry": "ui.py",
+      "views": [
+        "main",
+        "compact",
+        "settings",
+        "native"
+      ]
+    },
+    "client.view": [
+      {
+        "slot": "panel",
+        "view": "main",
+        "title": "Hello 面板",
+        "icon": "hand.wave",
+        "priority": 10
+      },
+      {
+        "slot": "window",
+        "view": "compact",
+        "title": "Hello 窗口",
+        "icon": "macwindow.on.rectangle",
+        "size": {
+          "minWidth": 360,
+          "minHeight": 240
+        }
+      },
+      {
+        "slot": "settings.section",
+        "view": "settings",
+        "title": "Hello 设置",
+        "icon": "slider.horizontal.3"
+      },
+      {
+        "slot": "panel",
+        "view": "native",
+        "title": "Hello 原生面板",
+        "icon": "square.stack.3d.up",
+        "priority": 5,
+        "render": "native"
+      }
+    ],
+    "client.command": {
+      "id": "examples.hello-panel.open",
+      "title": "打开 Hello 面板",
+      "shortcut": "cmd+shift+h"
+    },
+    "client.panel": {
+      "views": [
+        {
+          "view": "native",
+          "entry": "Panels/Hello.swift",
+          "apiVersion": 1
+        }
+      ]
+    }
+  }
+}
