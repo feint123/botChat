@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.20</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.20</h1>
+<h2>botChat 1.1.20</h2>
+<p>本次主线：文件预览终于跟上写盘——agent 改动文件、外部编辑器保存后预览自动刷新，不必再关页签重开；同时上线独立主题选择器，并打磨了输入条细节与两处稳定性问题。</p>
+<h3>文件预览：跟随写盘自动刷新</h3>
+<ul>
+  <li>agent 的写入、编辑、检查点落盘后，相关文件预览自动失效并刷新。此前工具栏「刷新」与错误态「重试」实际无效，只能关页签重开，现已修复。</li>
+  <li>外部编辑器保存、命令行写入等任意进程的改动也能被监听：目录内的新建、重命名、删除与文件原地写都覆盖。刷新时保留旧内容直到新内容就绪，不再闪空白，滚动位置也一并保留。</li>
+</ul>
+<h3>主题：独立选择器 + 实时预览</h3>
+<ul>
+  <li>新增独立主题选择浮层：一栏清单，光标选中即实时预览、确认才落盘；按 Esc、失焦或回车关闭会先回滚未确认的预览。主题不再挤进通用快捷面板，也不占 ⌘1…9 编号。</li>
+</ul>
+<h3>输入条：几个可见细节</h3>
+<ul>
+  <li>URL chip 现在会异步显示站点图标：先占位，解析后再替换。</li>
+  <li>模型选择浮层补上额度信息，整体高度与 @ 浮层对齐。</li>
+  <li>@ 文件引用 chip 的长路径不再右端溢出或末尾被裁。</li>
+</ul>
+<h3>稳定性</h3>
+<ul>
+  <li>子 Agent 直播流与子代理状态流补上心跳，模型长时间静默时不再因超时反复断连重连。</li>
+  <li>原生插件面板：成功加载后被强制退出或用 Xcode Stop 结束，不再被误判成「崩过」，重启时不必再为没崩过的面板点一次「仍要启用」。</li>
+</ul>
+<h3>插件能力</h3>
+<ul>
+  <li>插件现在可以读取并操作目标台账：待办类插件能把用户交代的事变成 botChat 真正执行的目标；写入仍只走既有状态机。</li>
+</ul>
+</body>
+</html>
