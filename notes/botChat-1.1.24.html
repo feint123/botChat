@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.24</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.24</h1>
+<p>本次主线：聊天体验打磨 —— 故障气泡改成看得懂的人话、输入条行内引用统一、子助手的发言与进度呈现更完整，并修掉几处等待泡与正文渲染的问题。</p>
+<h3>新增与改进</h3>
+<ul>
+  <li>故障气泡改版：标题换成能看懂的人话，机读细节折叠收起，配中性底色和一圈细描边，出错时不再满屏堆栈。</li>
+  <li>输入条行内引用统一成 markdown 形态：文件、指令、图片三类补齐，旧的附件引用账本退役，引用形式更稳定。</li>
+  <li>子助手的发言与助手接话同档呈现，进度发言也恢复：按内容水位触发、用第一人称自述进展，长任务不再看起来卡住。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li>修复等待泡被不可见的消息片段提前撤掉：是否继续显示等待，改看聊天流里真正产出的行。</li>
+  <li>修复首字到达前跳动：等待态改为一条完整消息（头像 + 气泡壳内的三点呼吸），正文首字到达时不再突然跳变。</li>
+  <li>子代理转述正文统一走 markdown 渲染，链接、代码等不再以纯文本呈现。</li>
+</ul>
+</body>
+</html>
