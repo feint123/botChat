@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.26</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.26</h1>
+<p>本次主线：聊天模式的呈现继续收敛——终态结论改由小模型以「子助手」第一人称生成，用户贴纸头像与插件轮次在聊天流里改用更紧凑的呈现；聊天模式开关与会话模式选择器重新分居窗口工具栏与侧栏。</p>
+<h3>新增与改进</h3>
+<ul>
+  <li>聊天模式的终态结论改由小模型以「子助手」第一人称生成，读起来更像助手自己的收尾。</li>
+  <li>用户气泡组首条消息前固定显示一枚贴纸头像，并放大到与既有头像协调的尺寸，不再显小。</li>
+  <li>插件轮次在聊天流里折成折叠单行，点开即在既有面板宿主中查看，不再占满时间线。</li>
+  <li>聊天模式开关移到窗口工具栏，会话模式选择器落到侧栏并改为纯图标分段控件。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li>修复聊天流点击丢失：纯几何锚点不再抢命中；吸底交互时窗口内的位移不再改动内容。</li>
+  <li>修复插件面板骨架态误报「读不出来」，改为准备态并正确触发该轮内容加载。</li>
+  <li>修复输入条在行首按退格时被投影层拼回换行的问题。</li>
+  <li>修复输入法（IME）组合期上屏吞掉光标后正文的问题。</li>
+  <li>修复光标所在行列表标记出现双符号的问题。</li>
+</ul>
+</body>
+</html>
