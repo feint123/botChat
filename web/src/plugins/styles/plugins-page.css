@@ -1,0 +1,126 @@
+/* 插件开发文档页 —— 与主页同源：只复用 tokens.css 的变量与 base.css 的基础排版。
+   本文件是该页全部样式；组件内不写 <style scoped>。 */
+@import '../../styles/tokens.css';
+@import '../../styles/base.css';
+
+/* ── 顶部条 ───────────────────────────────────────────── */
+.pp-top{position:sticky;top:0;z-index:20;background:rgba(255,251,242,.92);
+backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+.pp-top-in{max-width:1180px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:12px;font-size:13px}
+.pp-back{font-weight:600;color:var(--ink-2);white-space:nowrap}
+.pp-back:hover{color:var(--ink)}
+.pp-brand{font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.pp-tag{font-family:var(--mono);font-size:11.5px;color:var(--amber);background:var(--amber-soft);
+border:1px solid #efe0bd;border-radius:6px;padding:1px 7px;white-space:nowrap}
+.pp-top-in .sp{margin-left:auto}
+.pp-top-in .sp a{color:var(--ink-3);font-size:12.5px}
+
+/* ── 双列骨架：左固定目录 + 右正文 ──────────────────────── */
+.pp-layout{max-width:1180px;margin:0 auto;padding:0 24px;
+display:grid;grid-template-columns:222px minmax(0,1fr);gap:46px;align-items:start}
+.pp-toc{position:sticky;top:72px;padding:26px 0 40px;font-size:13.5px;line-height:1.5}
+.pp-toc-t{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.14em;margin:0 0 12px}
+.pp-toc nav{display:flex;flex-direction:column;gap:2px}
+.pp-toc a{display:flex;gap:9px;padding:5px 8px;border:1px solid transparent;border-radius:8px;color:var(--ink-2)}
+.pp-toc a:hover{background:var(--card);border-color:var(--line);color:var(--ink);text-decoration:none}
+.pp-toc a .n{font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.6;flex:none}
+.pp-main{min-width:0;padding:26px 0 60px}
+
+/* ── 开篇 ─────────────────────────────────────────────── */
+.pp-hero{padding:6px 0 12px}
+.pp-hero h1{font-size:clamp(26px,3.6vw,38px);letter-spacing:-.025em;font-weight:800;margin:0 0 10px}
+.pp-hero .lead{color:var(--ink-2);font-size:16px;max-width:44em;margin:0 0 18px}
+.pp-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.pp-chip{font-size:12.5px;color:var(--ink-2);background:var(--card);border:1px solid var(--line);
+border-radius:999px;padding:3px 11px}
+.pp-chip b{color:var(--ink);font-weight:600}
+
+/* ── 章节 ─────────────────────────────────────────────── */
+.pp-sec{padding:34px 0 4px;border-top:1px solid var(--line-soft);margin-top:26px}
+.pp-sec h2{font-size:clamp(20px,2.3vw,25px);letter-spacing:-.02em;font-weight:800;margin:0 0 12px;overflow-wrap:anywhere}
+.pp-sec h3{font-size:15.5px;font-weight:800;letter-spacing:-.01em;margin:22px 0 8px;overflow-wrap:anywhere}
+.pp-hero h1{overflow-wrap:anywhere}
+.pp-kicker{font-family:var(--mono);font-size:11.5px;color:var(--amber);letter-spacing:.1em;margin:0 0 6px}
+.pp-sec p{color:var(--ink-2);margin:0 0 12px;font-size:14.5px;max-width:48em}
+.pp-sec p b,.pp-sec li b{color:var(--ink);font-weight:600}
+.pp-list{margin:0 0 14px;padding-left:20px;color:var(--ink-2);font-size:14.5px;max-width:48em}
+.pp-list li{margin:4px 0}
+.pp-list li::marker{color:var(--amber)}
+
+/* ── 行内 code ────────────────────────────────────────── */
+.pp-main code{font-family:var(--mono);font-size:.86em;color:var(--ink);background:rgba(26,29,33,.06);
+border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+.pp-main pre code{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden;white-space:pre;
+background:none;padding:0;border-radius:0;font-size:12.5px;line-height:1.6;color:var(--ink);
+-webkit-overflow-scrolling:touch}
+
+/* ── 代码块：滚动容器是内部 code，pre 自身不越界 ──────── */
+.pp-code{position:relative;margin:0 0 14px;padding:20px 14px 12px;background:var(--log-bg);border:1px solid var(--line);
+border-radius:var(--r-md);overflow:hidden;max-width:100%;
+font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink)}
+.pp-code::before{content:attr(data-lang);position:absolute;top:6px;right:12px;font-size:10.5px;color:var(--ink-3);
+letter-spacing:.08em}
+
+/* ── 提示块 ───────────────────────────────────────────── */
+.pp-note{margin:0 0 14px;padding:12px 14px;border-radius:var(--r-md);font-size:14px;color:var(--ink-2);
+background:var(--blue-soft);border:1px solid #d8e5fd}
+.pp-note.warn{background:var(--amber-soft);border-color:#efe0bd}
+.pp-note .t{display:block;color:var(--ink);font-weight:700;font-size:13.5px;margin-bottom:4px}
+.pp-note p{margin:0 0 6px}
+.pp-note p:last-child{margin-bottom:0}
+.pp-note code{background:rgba(26,29,33,.07)}
+
+/* ── 表格 ─────────────────────────────────────────────── */
+.pp-tbl{width:100%;margin:0 0 16px;border-collapse:collapse;font-size:13.5px;table-layout:auto}
+.pp-tbl th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.06em;
+text-align:left;padding:0 10px 7px 0;border-bottom:1px solid var(--line)}
+.pp-tbl td{color:var(--ink-2);padding:8px 10px 8px 0;border-bottom:1px solid var(--line-soft);
+vertical-align:top;min-width:0;overflow-wrap:break-word}
+.pp-tbl td:first-child{color:var(--ink)}
+/* 标识符不从中间拆词（schemaVersio|n 这种）；长说明仍可换行 */
+.pp-tbl code,.pp-tbl td:first-child{word-break:keep-all;overflow-wrap:normal}
+.pp-tbl tr:last-child td{border-bottom:0}
+.pp-tbl code{font-size:12px;white-space:nowrap}
+/* 表格容器：只做宽度约束，不做横向滚动 —— 窄屏靠堆叠卡片，不靠横滚 */
+.pp-tbl-wrap{max-width:100%;min-width:0}
+
+/* ── 流程编号步骤 ─────────────────────────────────────── */
+.pp-step{margin:0 0 18px;padding:0}
+.pp-step .h{display:flex;align-items:baseline;gap:9px;margin:0 0 6px}
+.pp-step .h .n{font-family:var(--mono);font-size:11.5px;color:var(--amber);flex:none;line-height:1.8}
+.pp-step .h .w{font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.pp-step p{font-size:14px;margin:0 0 8px}
+.pp-step .pp-code{margin-bottom:10px}
+
+/* ── 页脚 ─────────────────────────────────────────────── */
+.pp-foot{border-top:1px solid var(--line);background:var(--paper-deep);margin-top:20px}
+.pp-foot .in{max-width:1180px;margin:0 auto;padding:22px 24px;display:flex;flex-wrap:wrap;gap:12px;
+align-items:center;font-size:13px;color:var(--ink-2)}
+.pp-foot .in .r{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.pp-foot a{font-weight:600}
+
+/* ── 窄屏：目录折到顶部，正文单列 ──────────────────────── */
+@media (max-width:900px){
+  .pp-layout{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px}
+  .pp-toc{position:static;top:auto;padding:14px 0 4px;border-bottom:1px solid var(--line-soft)}
+  .pp-toc-t{margin:0 0 8px}
+  .pp-toc nav{display:flex;flex-wrap:wrap;gap:5px;padding-bottom:4px}
+  .pp-toc a{padding:3px 9px;border-color:var(--line);background:var(--card);white-space:nowrap;font-size:12.5px}
+  .pp-toc a .n{line-height:1.5}
+  .pp-main{padding:12px 0 44px}
+  .pp-sec{margin-top:18px;padding-top:26px}
+}
+@media (max-width:760px){
+  .pp-top-in{padding:10px 16px}
+  .pp-tbl thead{display:none}
+  .pp-tbl,.pp-tbl tbody,.pp-tbl tr,.pp-tbl td{display:block;width:100%}
+  .pp-tbl tr{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+  .pp-tbl tr:last-child{border-bottom:0}
+  .pp-tbl td{border:0;padding:0 0 3px}
+  /* 堆叠卡片模式下标识符必须可断行，否则长字段名会把页面顶宽 */
+  .pp-tbl code,.pp-tbl td:first-child{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+  .pp-tbl td:not(:first-child){font-size:13px}
+  .pp-tbl td:not(:first-child)::before{content:attr(data-th) " · ";font-family:var(--mono);font-size:10.5px;
+  color:var(--ink-3);letter-spacing:.04em}
+  .pp-code{font-size:12px}
+}

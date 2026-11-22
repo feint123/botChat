@@ -1,9 +1,11 @@
 <script setup>
 import appIcon from '../assets/app-icon.webp'
+import { PLUGINS_DOC_URL } from '../lib/release.js'
 
 const links = [
   { href: '#caps', label: '能力' },
   { href: '#flow', label: '工作流' },
+  { href: PLUGINS_DOC_URL, label: '插件开发' },
   { href: '#install', label: '安装' },
   { href: 'https://github.com/feint123/botChat', label: 'GitHub', external: true },
 ]

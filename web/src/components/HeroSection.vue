@@ -16,7 +16,7 @@ function getPhaseEl () {
     <div class="wrap hero-grid">
       <div>
         <span class="eyebrow"><i></i>群聊式 Agent 任务编排 · macOS 原生客户端</span>
-        <h1 id="h1"><span class="fade">说要什么，</span><br><span class="fade">剩下的交给分身。</span></h1>
+        <h1 id="h1"><span class="fade">说要什么，</span><br><span class="fade">剩下的交给子 Agent。</span></h1>
         <p class="sub">左右分栏的群聊式 Agent 任务编排应用——你只说要什么，主 Agent 拆解并现场合成子 Agent 并行执行，再汇聚成一份结果。</p>
         <p class="sub-en">supervisor fans out at runtime · sub-agents run in parallel · results converge</p>
         <div class="btns">

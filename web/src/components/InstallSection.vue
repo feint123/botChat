@@ -37,12 +37,12 @@ onUnmounted(() => clearTimeout(timer))
     <div class="wrap">
       <p class="kicker">INSTALL</p>
       <h2>下载即用。</h2>
-      <p class="lead">内置 Python / FastAPI 服务随 botChat.app 一起启动，无需自己跑后端。</p>
+      <p class="lead">内置 Python 服务随 botChat.app 一起启动，无需自己跑后端。</p>
       <div class="dl-card rv">
         <img class="dl-icon" :src="appIcon" width="96" height="96" alt="botChat 应用图标" loading="lazy" decoding="async">
         <div class="dl-main">
           <p class="dl-name">botChat<span class="dl-ver">v{{ APP_VERSION }}</span></p>
-          <p class="dl-meta">macOS 26 及以上（建议 26.1+）· Apple Silicon（arm64）· 当前版本 {{ APP_VERSION }}</p>
+          <p class="dl-meta">macOS 26.1 及以上 · Apple Silicon（arm64）· 当前版本 {{ APP_VERSION }}</p>
           <div class="btns">
             <a class="btn btn-p" :href="DMG_URL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>下载 macOS 版<span class="btn-ver">v{{ APP_VERSION }}</span></a>
             <a class="btn btn-s" :href="RELEASES_URL">历史版本</a>

@@ -10,7 +10,7 @@ const cards = [
       { tag: 'circle', cx: '18', cy: '18', r: '2.4' }
     ],
     title: '任务编排',
-    desc: '主 Agent 拆解需求，现场合成子 Agent 并行执行，完成后汇聚成一份结果。'
+    desc: '主 Agent 拆解需求，现场合成子 Agent 并行执行，完成后汇聚成一份结果；每个子 Agent 的进度实时可见。'
   },
   {
     shapes: [
@@ -18,15 +18,15 @@ const cards = [
       { tag: 'path', d: 'M8 9h8M8 12.5h5' }
     ],
     title: '群聊式时间线',
-    desc: '主 Agent 与子 Agent 的消息、工具调用同流展示，可取消、可续跑。'
+    desc: '主 Agent 与子 Agent 同一条时间线，每人身边一枚活动胶囊显示正在做什么；出错时故障气泡给人话标题，机读细节折叠。'
   },
   {
     shapes: [
       { tag: 'rect', x: '4', y: '4', width: '16', height: '12', rx: '2' },
       { tag: 'path', d: 'M8 9l2 2 4-4M4 20h16' }
     ],
-    title: '任务预确认卡',
-    desc: '关键提交前弹一张结构化确认卡，确认后再执行，不用重写提示词。'
+    title: '决策卡与提问卡',
+    desc: '需要你拍板的问题在卡片上直接作答，答复作为独立段落注入执行 prompt；聊天模式下决策卡与故障提示照常显示。'
   },
   {
     shapes: [
@@ -34,7 +34,7 @@ const cards = [
       { tag: 'rect', x: '13.5', y: '4', width: '7', height: '16', rx: '1.5' }
     ],
     title: '多列工作区',
-    desc: '可拖拽分栏，相邻列可锁定成组整体移动，3 个布局预设一键切换。'
+    desc: '分栏可拖拽调宽、可分组，同一屏只显示一列，其余走分页切换；文件预览跟随写盘自动刷新，引用是正文里的 markdown 行锚链接。'
   },
   {
     shapes: [
@@ -42,14 +42,14 @@ const cards = [
       { tag: 'path', d: 'M9 20h6M12 16v4M7 10l2 2 4-4' }
     ],
     title: '桌面操作',
-    desc: '经独立 mac_use 委派变体派出，看窗口、点按钮、输文本。桌面操作有动作分级。'
+    desc: '经独立 mac_use 委派变体派出：先 observe 稳定读，再 act 动作并读回验证；按键可定向到目标进程或系统全局。'
   },
   {
     shapes: [
       { tag: 'path', d: 'M5 5l7 7-7 7M12 19h7' }
     ],
-    title: '工具与 MCP',
-    desc: 'bash 合并登录 shell 环境（服务端优先 + PATH 并集），文件读写与 MCP 池接入。'
+    title: '工具与插件',
+    desc: '工具按本地 / MCP / 插件三轨注册，core 之外按需 tool_search 检索、tool_invoke 调用；插件可声明工具、hook、命令与主题，能产出时间线行、读写目标台账，界面只保留原生面板一种形态。'
   },
   {
     shapes: [
@@ -57,16 +57,16 @@ const cards = [
       { tag: 'path', d: 'M12 8.5V12l2.5 2' }
     ],
     title: '定时与 Skill',
-    desc: '到点自动发起一轮运行；项目 Skill 按需装载，会话记忆可跨会话回捞。'
+    desc: '定时任务到点在自己的执行会话里跑，侧栏任务行右键暂停/恢复、立即运行、编辑、删除，暂停中置灰不隐藏；输入 / 弹出技能候选。'
   },
   {
     shapes: [
       { tag: 'path', d: 'M4 18V9l8-5 8 5v9' },
       { tag: 'path', d: 'M4 18h16M9 18v-5h6v5' }
     ],
-    title: '设计系统库',
-    tag: '76 套',
-    desc: '内置 76 套设计 token（Claude / Vercel / Stripe / Spotify 风格）供设计任务取用。'
+    title: '主题与设计 token',
+    tag: '8 套',
+    desc: '内置 8 套主题包与 46 个语义角色，切主题走运行时快照、不重挂根视图；面板配色跟随主题浅深外观。'
   }
 ]
 </script>
