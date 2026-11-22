@@ -380,8 +380,8 @@ const sections = [
         '    ctx.command("examples.hello-panel.open", on_open)'
       ]),
       p('视图 handler 是**渲染与交互共用**同一个函数，`payload` 的键：`view` / `instanceKey` / `state` 恒有（`state` 只含白名单公开事实：`workspaceName`、有会话时的 `conversationTitle`），交互时多出 `nodeId` / `values` / `arguments`。'),
-      p('返回**整棵树**（`botchat.ui/1`）或**数据对象**（`botchat.panel/1`），由清单 `render` 决定，**插件不能自己选**。没有 patch / diff：回一模一样的树 ⇒ 界面不变，用户会以为「点了没反应」。'),
-      p('`ctx.host` 只有三个命名空间：`ctx.host.fs.read(path: str)` / `ctx.host.fs.write(path: str, text: str)` / `ctx.host.net.fetch(url, *, method="GET", headers=None, body=None)` / `ctx.host.llm.invoke(role: str, messages: list[dict[str, str]])`。四条口径：实参 MUST 是绝对路径（`${workspace}` **不会**被替换）；`net` 权限是精确 host（不许通配）；**渲染期禁写**（`fs.write` / `net.fetch` 在 `ui.render` 期间直接 `permissionDenied`）；`llm.invoke` 本期显式失败（`hostUnavailable`）。')
+      p('返回**数据对象**（`botchat.panel/1`）。`botchat.ui/1` 节点树已下线：写树会被当 data 校验并整帧降级。没有 patch / diff：回一模一样的数据 ⇒ 界面不变，用户会以为「点了没反应」。'),
+      p('`ctx.host` 有五个命名空间：`fs.read(path)` / `fs.write(path, text)` / `net.fetch(url, *, method="GET", headers=None, body=None)` / `llm.invoke(role, messages)`，外加 `goal.*`（`list` / `get` / `current` / `act` / `update` / `delete` / `create` / `deliver`，需 `permissions.goal`）与 `workspace.snapshot()`（**无参**，需 `permissions.workspace: ["read"]`）。六条口径：实参 MUST 是绝对路径（`${workspace}` **不会**被替换）；`net` 权限是精确 host（不许通配）；**渲染期禁写**（`fs.write` / `net.fetch` 在 `ui.render` 期间直接 `permissionDenied`）；`llm.invoke` 本期显式失败（`hostUnavailable`）；`workspace.snapshot()` 的工作区由宿主按当前 hook 会话派生，**没有参数**——允许传路径等于绕开路径白名单；`goal.execute` 档会让目标进入自动执行或重开预算（执行轮以完全访问运行，路径黑名单仍生效），且 MUST NOT 被 `act` / `create` 隐式推导。')
     ]
   },
   {
@@ -496,8 +496,11 @@ const sections = [
         ['`keychain`', '键名数组', '预留（本期无实现路径）'],
         ['`tools`', '宿主工具名数组', '预留'],
         ['`llm`', '角色数组', '`ctx.host.llm.invoke`（协议齐备但**显式失败** `hostUnavailable`）'],
-        ['`clipboard`', '布尔', '预留']
+        ['`clipboard`', '布尔', '预留'],
+        ['`goal`', '封闭集数组：`read` / `act` / `create` / `execute` / `deliver`', '`ctx.host.goal.*`；`act` / `create` / `execute` / `deliver` 会**隐式补 `read`**（不知道目标 id 就没法动手）'],
+        ['`workspace`', '封闭集数组：只有 `read`', '`ctx.host.workspace.snapshot()`；**不做隐式补全**（只有一项，补了等于无条件授予）。只给 git 快照，**不授予文件内容读取**（那仍归 `fs.read`），也没有写 / 执行档']
       ]),
+      p('`goal` 五档的语义差别很实际：`read` 只读（`list` / `get` / `current`）；`act` 是低风险状态动作（`confirm` / `return` / `answer` / `skip` / `block` / `cancel`）以及 `update` / `delete`；`create` 可新建目标；`execute` 允许让目标**进入自动执行、或重开已消耗的执行预算** —— 这一档的共同后果是「要花模型的真金白银」，而不是「改了个字段」，所以 MUST NOT 由 `act` / `create` 隐式推导；`deliver` 申报交付。执行轮以**完全访问**（`full_access`）运行，但路径黑名单仍然生效。'),
       p('**授权是人的显式动作**：`enabled: true` MUST 来自人的动作，MUST NOT 由扫描自动触发。授权端点里出现过的键**整体替换**，没出现的键保持原样，给空数组即撤销；清单没请求过的键会被拒并记 `permissionDenied`（不是静默丢弃）。升版本新增权限不自动授予，权限收缩自动收敛，响应带 `pending_keys`（请求了但未授权）与 `converged_keys`（被裁掉的键）。'),
       h3('三档执行位置（trust）'),
       tbl(['档位', '执行位置', '适用'], [
