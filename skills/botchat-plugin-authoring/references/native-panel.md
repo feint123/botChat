@@ -4,12 +4,15 @@
 SDK 真身 `clientSide/botChat/botChat/Services/Extensions/Native/PanelKitSource.swift`；
 门禁 `PanelSourceGate.swift`；编译 `PanelCompiler.swift` / `SwiftcRunner.swift`。
 
-## 一、先问一句：真的需要吗
+## 一、先问一句：真的需要界面吗
 
-| 需求 | 用 IR | 用 native |
-|---|---|---|
-| 文字、列表、表单、按钮、进度 | ✓ | 过度设计 |
-| Chart / 热力图 / 拖拽 / 动画 / 非标准布局 | 表达不了 | ✓ |
+> `botchat.ui/1`（预制节点 IR）已下线：**插件 UI 只有一种渲染体** —— 编译版 SwiftUI 面板。
+> 因此这一节问的不再是「IR 还是原生」，而是「这个插件真的需要人看见界面吗」。
+
+| 需求 | 选择 |
+|---|---|
+| 只要 Agent 做得到，人不需要看 | T1 纯工具，不开界面 |
+| 人要看到数据 / 点按钮 / 改设置 | 面板（`client.panel` + 包内 `Panels/*.swift`） |
 
 原生的代价：首次挂载 `swiftc` 编译（`-Onone` 约 0.83s）、代码在**宿主主进程内同权运行**
 （不是沙箱，门禁只挡误用与主题腐烂）、编译失败时用户只看到占位。
@@ -142,7 +145,7 @@ public func mainPanelEntry(_ hostRaw: UnsafeMutableRawPointer) -> UnsafeMutableR
   **模块名必带哈希**：同名 module 二次加载会让 ObjC runtime 撞类并静默跑旧实现。
 - 缓存键 = 面板源码 + SDK 源 + 参数 + `swiftc --version`；落
   `~/Library/Application Support/botChat/PanelBuilds/<hash>/`，全局 200 MB LRU。
-- 无工具链 ⇒ `nativeToolchainMissing` 占位 + 安装指引；同插件的 IR 视图照常工作。
+- 无工具链 ⇒ `nativeToolchainMissing` 占位 + 安装指引；**没有旁路渲染**（不会退回成某种内置界面）。
 - 编译失败 ⇒ 只留含 `error:` 的行（≤20 行 / ≤4000 字符），提供「让 Agent 修」回填。
 - **包根只认服务端下发**：`GET /api/extensions/views` 的 `roots.user` / `roots.builtin` 是定位面板源码的
   唯一依据（`home_root()` 可被 `BOTCHAT_HOME` 改到任意位置）。手拼 `~/.botchat/Extensions` 拼错的后果

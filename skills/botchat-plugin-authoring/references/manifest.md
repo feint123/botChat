@@ -25,12 +25,24 @@
 |---|---|---|---|
 | `server.tool` | `entry`（`.py`）、`tools`（非空字符串数组） | — | 已实现 |
 | `server.ui` | `entry`（`.py`）、`views`（非空字符串数组） | — | 已实现 |
-| `client.view` | `slot`、`view`、`title` | `icon` `priority`(int，缺省 0) `size` `lazy` `render` | 已实现 |
-| `client.panel` | `views: [{view, entry}]` | `apiVersion`（只认 `1`） | 已实现 |
+| `client.view` | `slot`、`view`、`title` | `icon` `priority`(int，缺省 0) `size` `lazy` `render`（封闭值集只剩 `native`，缺省即它） | 已实现 |
+| `client.panel` | `views: [{view, entry?\|bundle?}]`（`entry` 与 `bundle` 至少一个） | `apiVersion`（只认 `1`） | 已实现 |
+| `client.row` | `view`、`title` | `turn`（缺省 `tail`）、`render`（只认 `native`）、`icon`、`priority`、`maxHeight` | 已实现 |
 | `client.command` | `id`、`title` | `shortcut` | 已实现 |
 | `client.theme` | `entry`（`.json`） | — | 已实现（8 个内置主题包即此形态） |
 | `server.hook` | `entry`（必需，与 `server.tool` / `server.ui` 同文件）、`events`（放行集 `{pre_model, run_finished}`）、`onError?`（可选，`continue` 缺省 / `abort` 仅 `pre_model` 有效）、`priority?`（可选，整数，缺省 `100`） | — | 已实现 |
 | `server.masking.rules` / `server.provider` | — | — | **登记但未实现**：写了只得到一条诊断，不会生效 |
+
+**`client.row`（轮级行）不是 slot**：它是与 `client.view` 语义相反的另一类渲染位置 ——
+`client.view` 是「一个挂载面 → 一/少量常驻实例，用户动作开启」，`client.row` 是「一轮 → 一行，
+数据驱动」。字段只有 `view` / `title` / `turn` / `render` / `icon` / `priority` / `maxHeight`：
+
+- `turn` 封闭取值本期只有 `tail`（挂在轮尾）；
+- `render` 与 `client.view` 同缺省（`native`）但**各自独立解码**；同样要求同包 `client.panel` 有同名条目；
+- `maxHeight` 是**插件自报的软预算**（正整数且 ≤2000），越界忽略该字段并记 info，服务端 MUST NOT 夹取
+  （真实像素语义与夹取都在客户端）；
+- 单个包的行声明条数上限 `ROW_MAX_ENTRIES = 4`，与运行时「每轮 ≤4 行」同源；
+- 行载荷上限 **32 KiB**（面板是 256 KiB），另有 `ROW_TEXT_MAX_CHARS = 80` 的文本截断。
 
 硬约束：
 
@@ -65,6 +77,17 @@
 | `tools` | 宿主工具名数组 | 预留 |
 | `llm` | 角色数组 | `ctx.host.llm.invoke`（协议齐备但**显式失败** `hostUnavailable`） |
 | `clipboard` | 布尔 | 预留 |
+| `goal` | 封闭集数组：`read` / `act` / `create` / `execute` / `deliver` | `ctx.host.goal.*`；`act`/`create`/`execute`/`deliver` 会**隐式补 `read`**（不知道目标 id 无法动手） |
+| `workspace` | 封闭集数组：只有 `read` | `ctx.host.workspace.snapshot()`；**不做隐式补全**（只有一项，补了等于无条件授予）；只给 git 快照，MUST NOT 授予文件内容读取（那仍归 `fs.read`），也没有写/执行档 |
+
+`goal` 五档的语义（`fields.py:AllowedGoalPermissions`）：
+
+- `read`：`list` / `get` / `current`，只读面板；
+- `act`：低风险状态动作（`confirm` / `return` / `answer` / `skip` / `block` / `cancel`）以及 `update` / `delete`；
+- `create`：新建目标（是否自动推进另由 `execute` 决定）；
+- `execute`：允许让目标进入自动执行、或重开已消耗的执行预算。共同后果是「要花模型的真金白银」，
+  不是「改了个字段」——执行轮以**完全访问**运行，但路径黑名单仍然生效。这一档 MUST NOT 由 `act`/`create` 隐式推导；
+- `deliver`：申报交付。
 
 授权是**人的显式动作**：清单只写「请求」，实际授权落 `extension_state.permissions_json`。
 升版本新增权限不自动授予；权限收缩自动收敛；给清单没请求的键会被拒并记 `permissionDenied`。
@@ -92,7 +115,7 @@
 `activationEvents` 里的 `onTool:` 写的是**对外名**（`<id 归一>__<工具名>`，点号与连字符变下划线），
 不是插件内名。口径写对是为了将来接上事件驱动时不用返工 —— 本期它不参与激活判定。
 
-### 5.2 IR 面板 + 设置区 + 命令
+### 5.2 面板 + 设置区 + 命令（多槽位）
 
 ```json
 {
@@ -107,15 +130,21 @@
   "capabilities": {
     "server.ui": { "entry": "plugin.py", "views": ["main", "settings"] },
     "client.view": [
-      { "slot": "panel", "view": "main", "title": "看板", "icon": "square.grid.2x2", "priority": 50 },
-      { "slot": "settings.section", "view": "settings", "title": "看板设置" }
+      { "slot": "panel", "view": "main", "title": "看板", "icon": "square.grid.2x2", "priority": 50, "render": "native" },
+      { "slot": "settings.section", "view": "settings", "title": "看板设置", "render": "native" }
     ],
+    "client.panel": {
+      "views": [
+        { "view": "main", "entry": "Panels/Main.swift", "apiVersion": 1 },
+        { "view": "settings", "entry": "Panels/Settings.swift", "apiVersion": 1 }
+      ]
+    },
     "client.command": { "id": "acme.board.open", "title": "打开看板" }
   }
 }
 ```
 
-### 5.3 原生面板（`render: native` + 包内 Swift）
+### 5.3 单面板最小形态（与 5.2 同形，只是少一个槽位）
 
 ```json
 {

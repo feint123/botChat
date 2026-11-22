@@ -29,13 +29,21 @@ def register(ctx):          # 宿主在首次匹配 activationEvents 时调用�
 工具对外名 = `<sanitized_id>__<sanitized_tool_name>`（点号与连字符归一下划线，总长 ≤ 64）。
 模型与能力目录只认对外名；`ext.tool.call` 只认插件内名。
 
-## 三、`ctx.host` 的三个命名空间
+## 三、`ctx.host` 的五个命名空间
 
 ```python
 ctx.host.fs.read(path: str) -> str          # 越权/不存在即抛 permissionDenied
 ctx.host.fs.write(path: str, text: str) -> None   # 写不隐含读；父目录由宿主创建
 ctx.host.net.fetch(url, *, method="GET", headers=None, body=None) -> {status, body, headers}
 ctx.host.llm.invoke(role: str, messages: list[dict[str, str]]) -> str
+
+# 目标台账（需 permissions.goal；读=read，其余动作按档授予）
+ctx.host.goal.list(...)  /  .get(goal_id)  /  .current()
+ctx.host.goal.act(...)   /  .update(...)   /  .delete(goal_id, expected_round)
+ctx.host.goal.create(...) /  .deliver(...)
+
+# 工作区快照（需 permissions.workspace: ["read"]）
+ctx.host.workspace.snapshot() -> {available, reason, truncated, total, files[]}
 ```
 
 四条口径：
@@ -47,6 +55,12 @@ ctx.host.llm.invoke(role: str, messages: list[dict[str, str]]) -> str
    不发出任何请求。写只能发生在动作（`ui.action`）与工具调用里。
 4. **`llm.invoke` 本期显式失败**（`hostUnavailable`）：协议齐备但宿主不代发模型请求。
    插件不会拿到伪造结果，也不会拿到 key。
+5. **`workspace.snapshot()` 无参**：工作区由宿主按**当前 hook 的会话**派生。允许插件传路径
+   等于允许它读任意目录的 git 事实，那就绕开了路径白名单 —— 所以这个接口 MUST NOT 有参数。
+   不在 hook 上下文（例如在工具里直调）或缺 `permissions.workspace` ⇒ `permissionDenied`；
+   工作区不是 git 仓库 ⇒ 正常返回 `available=false`（两者处置不同）。
+6. **`goal` 写入只走既有状态机**：`execute` 档会让目标进入自动执行或重开已消耗的执行预算，
+   执行轮以完全访问运行（路径黑名单仍生效）。这一档 MUST NOT 被 `act` / `create` 隐式推导。
 
 ## 四、三类 handler 的入参与返回
 
@@ -76,11 +90,11 @@ def render(payload: dict) -> dict: ...
 | `instanceKey` | 恒有 | 实例键（同一 view 可多实例，状态要按它分区） |
 | `state` | 恒有（可能空对象） | 白名单公开事实：`workspaceName`、有会话时的 `conversationTitle`；取不到就**没有这个键** |
 | `nodeId` | 交互时 | 被操作的节点 id（Button/Toggle 的 `nodeId`、Field 的 `name`） |
-| `values` | 交互时 | 表单当前值（IR 的 `Field` 走这里） |
+| `values` | 交互时 | 表单当前值（保留键；IR 的 `Field` 已随 `botchat.ui/1` 下线，新插件用 `arguments`） |
 | `arguments` | 交互时 | 节点的 `arguments`（原生面板 `host.dispatch(nodeId, args)` 落在这里） |
 
-- 返回**整棵树**（`botchat.ui/1`）或**数据对象**（`botchat.panel/1`），由清单 `render` 决定，插件不能自己选。
-- 没有 patch / diff：回一模一样的树 ⇒ 界面不变（用户会以为「点了没反应」）。
+- 返回**数据对象**（`botchat.panel/1`）。`botchat.ui/1` 节点树已下线：写树会被当 data 校验并整帧降级。
+- 没有 patch / diff：回一模一样的数据 ⇒ 界面不变（用户会以为「点了没反应」）；交互分支 MUST 产生可观察变化。
 - 渲染预算 2s；渲染 MUST 纯函数（同输入同输出），副作用只能落在动作与工具里。
 
 ### 4.3 命令 handler

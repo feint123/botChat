@@ -1,6 +1,6 @@
 ---
 name: botchat-plugin-authoring
-description: 为 botChat 编写、修改、调试插件（扩展）的完整 SOP —— 清单 v2 字段、register(ctx) 工具、IR 面板树（botchat.ui/1）、原生 Swift 面板（botchat.panel/1）、doctor 静态对账、安装/启用/授权/重启与诊断码排障。Use when 用户要写一个 botChat 插件或扩展、给 botChat 加一个侧栏面板/设置页/工具、把已有脚本包成插件、插件装了不生效/面板空白/按钮没反应/工具调不到、或问清单字段、IR 节点、面板编译、扩展放在哪个目录。
+description: 为 botChat 编写、修改、调试插件（扩展）的完整 SOP —— 清单 v2 字段、register(ctx) 工具与 ctx.host、原生 SwiftUI 面板（botchat.panel/1）、轮级行、doctor 静态对账、安装/启用/授权/重启与诊断码排障。插件 UI 只有一种渲染体：编译版 SwiftUI 面板（botchat.ui/1 预制节点 IR 已下线）。Use when 用户要写一个 botChat 插件或扩展、给 botChat 加一个侧栏面板/设置页/工具、把已有脚本包成插件、插件装了不生效/面板空白/按钮没反应/工具调不到、或问清单字段、面板编译、扩展放在哪个目录。
 ---
 
 # botChat 插件开发（扩展）
@@ -9,8 +9,10 @@ description: 为 botChat 编写、修改、调试插件（扩展）的完整 SOP
 被启用、被点击、被 Agent 调用之后，剩下的都是往同一个形状里填内容。
 
 契约正文（唯一事实源，本文只给操作路径）：
-`docs/extension-plugin-contract.md`（清单/接口/诊断码）、`docs/extension-plugin-ui.md`（IR 节点）、
-`docs/extension-panel-native.md`（原生面板）。**与代码冲突时以代码为准**，冲突处本文标注了对应实现文件。
+`docs/extension-plugin-contract.md`（清单/接口/诊断码）、`docs/extension-panel-native.md`（插件 UI 唯一事实源）、
+`docs/ui-kit.md`（面板可用的模式层组件与档位）。
+**与代码冲突时以代码为准**，冲突处本文标注了对应实现文件。
+`botchat.ui/1`（预制节点 IR）已全量下线：`docs/extension-plugin-ui.md` 随之下线删除，不再有节点契约。
 
 ## 第 0 步 — 形态问诊（MUST NOT 跳过）
 
@@ -20,11 +22,15 @@ description: 为 botChat 编写、修改、调试插件（扩展）的完整 SOP
 
 ### 六个类型选项（ID 与名称逐字固定，MUST NOT 另造别名）
 
+> **T2 与 T3 已合并**：`botchat.ui/1`（预制节点 IR）下线后，插件 UI 只有一种渲染体 ——
+> 编译版 SwiftUI 面板。T2 保留 ID（兼容旧对话与脚本），但两者产出的包**同形**：
+> `server.ui` + `client.view(render: native)` + `client.panel` + 包内 `Panels/*.swift`。
+
 | ID | 名称 | 什么时候选它 |
 |---|---|---|
 | T1 | `tool` 纯工具 | 只要 Agent「做得到」、不需要人看见界面：查数据、记账、调本机工具 |
-| T2 | `ui` IR 面板 | 要面板/设置页/侧栏段，内容能用文字、列表、按钮、开关、表单表达 |
-| T3 | `native` 原生 SwiftUI 面板 | IR 表达不了：Chart、热力图、拖拽、动画、非标准布局 |
+| T2 | `ui` 面板（= T3，同一种渲染体） | 要面板 / 设置页 / 侧栏段 / 输入条配件；界面写 SwiftUI（`BotChatKit` 组件） |
+| T3 | `native` 原生面板（= T2） | 与 T2 同形；保留这个 ID 只为旧对话与脚本兼容 |
 | T4 | `theme` 主题包 | 只换观感（46 角色配色；字体/度量 MUST NOT 进主题数据），没有任何代码与能力 |
 | T5 | `combo` 工具+面板+命令组合 | 一个包同时要「Agent 能调」+「人能看到能点」，并带 QuickBar 可检索命令 |
 | T6 | `modify` 修改或调试已有插件 | 包已存在，要改行为、加能力、修「不生效/空白/点不动」 |
@@ -72,24 +78,27 @@ id: acme.hello          # 包目录名 MUST 等于它，且 MUST NOT 以 builtin
 | 类型 | `scaffold_plugin.py` | 先读 |
 |---|---|---|
 | T1 | `--mode tool --tool <name>` | `references/manifest.md`、`references/plugin-api.md` |
-| T2 | `--mode ui --slot <slot>` | `references/manifest.md`、`references/view-ir.md` |
-| T3 | `--mode native --slot <slot>` | `references/native-panel.md`（外壳与槽位仍走 view-ir） |
+| T2 | `--mode ui --slot <slot>` | `references/manifest.md`、`references/view-native.md` |
+| T3 | `--mode native --slot <slot>` | `references/native-panel.md`（与 T2 同形） |
 | T4 | `--mode theme` | `references/intake.md` §一 T4 条 |
-| T5 | `--mode ui --with-tool` | `references/view-ir.md` + `references/plugin-api.md` |
+| T5 | `--mode ui --with-tool` | `references/view-native.md` + `references/plugin-api.md` |
 | T6 | 不生成骨架，直接跳 §三 | `references/intake.md` §五 |
 | `server.hook` 能力 | `--with-hook` 叠到已有档，或 `--mode hook` 生成纯 hook 包 | `references/hook.md`；对账 `check_plugin.py` |
 
-## 一、问诊后的档位速查：四档，别一上来就写原生面板
+## 一、问诊后的档位速查：三种形态 + 主题包
 
-| 档 | 用什么 | 判据 | 能表达什么 |
-|---|---|---|---|
-| `tool` | `server.tool` + `tools.py` | Agent 要「做事」：查数据、记账、调本机工具 | 只有能力，没有界面 |
-| `ui`（默认档） | `server.ui` + `client.view` + IR 树 | 要一个面板/设置页，内容是文字、列表、按钮、开关、表单 | 17 个预制节点，宿主负责排版与取色；挂哪个槽位由 `client.view[].slot` 决定 |
-| `native` | 上面 + `client.panel` + 包内 `.swift` | 需要 Chart / 热力图 / 拖拽 / 动画 / 非标准布局 | 编译版 SwiftUI，**在宿主进程内同权运行** |
-| `theme` | `client.theme` + 包内 `.json` | 只换观感，无任何代码与能力 | 无代码、只 JSON；**必须随 app 分发**（`clientSide/botChat/Extensions/<id>/`，构建后生效） |
+> 插件 UI **只有一种渲染体**：编译版 SwiftUI 面板（`botchat.panel/1`）。
+> `botchat.ui/1`（预制节点 IR）已全量下线，不再有「用节点拼界面」这条路。
 
-判据来自 `docs/extension-panel-native.md` §一：**能用 IR 表达就别写原生面板**。原生面板的代价是
-编译链（首次挂载 `swiftc` 约 0.8s）、主进程同权执行、以及出错时用户只看到占位。
+| 档 | 用什么 | 能表什么 |
+|---|---|---|
+| `tool` | `server.tool` + `tools.py` | 只有能力，没有界面 |
+| `ui` / `native`（同形） | `server.ui` + `client.view(render: native)` + `client.panel` + 包内 `Panels/*.swift` | 任意 SwiftUI 界面（`BotChatKit` 组件），**在宿主进程内同权运行**；挂哪个槽位由 `client.view[].slot` 决定 |
+| `theme` | `client.theme` + 包内 `.json` | 无代码、只 JSON；**必须随 app 分发**（`clientSide/botChat/Extensions/<id>/`，构建后生效） |
+
+面板的代价：编译链（首次挂载 `swiftc` 约 0.8s，`-O` 首编实测约 5.3s）、主进程同权执行、
+出错时用户只看到占位。没有工具链的机器上，插件 UI 显示宿主导航占位（安装指引），
+MUST NOT 期待任何旁路渲染。
 
 ## 二、五步工作流（把第 0 步的需求卡填进代码）
 
@@ -110,10 +119,10 @@ python3 $SKILL/scripts/scaffold_plugin.py --id acme.hello --name "我的面板" 
 ### 第 2 步：填逻辑
 
 - 工具：`templates/tool/tools.py.tpl` 的形状 —— `register(ctx)` 里 `ctx.tool(name, handler, description=, input_schema=)`。
-- IR 面板：`register(ctx)` 里 `ctx.view(name, handler)` / `ctx.command(id, handler)`，handler 收 `payload` 回**整棵树**。
-- 原生面板：视图函数回**数据对象**（不是树），界面写包内 `Panels/*.swift`；入口 MUST 用
-  `@_cdecl("botchat_panel_entry")` 导出**一次**，MUST NOT 给入口类挂固定 ObjC 类名（`@objc(固定名)`
-  已被门禁拒：类名是进程级全局命名空间，同进程第二个面板拿不到自己的类）。
+- 面板（ui / native 同形）：`register(ctx)` 里 `ctx.view(name, handler)` / `ctx.command(id, handler)`，
+  handler 收 `payload` 回**数据对象**（不是节点树）；界面写包内 `Panels/*.swift`。
+  入口 MUST 用 `@_cdecl("botchat_panel_entry")` 导出**一次**，MUST NOT 给入口挂固定 ObjC 类名
+  （`@objc(固定名)` 已被门禁拒：类名是进程级全局命名空间，同进程第二个面板拿不到自己的类）。
 
 **声明与注册必须逐字对得上**（这是最高频的翻车点）：
 
@@ -202,8 +211,9 @@ doctor 的口径必须看懂：它只做**静态**判定（entry 文件存在且
    `client.panel` 只允许 `.swift` 且单文件 ≤ 256 KB。
 6. 工具返回值 MUST 可 JSON 序列化（不可序列化即 `invalid_result`，宿主不会 `str()` 兜底）；
    业务失败用返回体表达，别靠抛异常。
-7. IR 树里 **MUST NOT 出现字面色值 / 字体 / 像素**：`color`/`font`/`fontSize`/`width`/`padding`/`radius`
-   这些键名本身非法；颜色只能走 `tone`，取值限于 `TONE_ROLES` 的 27 个角色。
+7. 面板里 **MUST NOT 出现字面色值 / 字体 / 像素**：视觉一律用 `BotChatKit` 组件与角色，
+   取色只经 `host.panelColor(角色名)`（它是**动态色**，MUST NOT 转成固定 RGB 缓存）。
+   面板根 MUST 挂 `panelKitRoot(host)` 注入 palette；MUST NOT 自建 palette 或自写取色逻辑。
 8. **渲染 MUST 是纯函数**：渲染期的写型宿主调用（`fs.write` / `net.fetch`）会被直接拒（`permissionDenied`）。
 9. 权限缺省全空；`fs.read` / `fs.write` 是**路径前缀数组**，写不隐含读；`net` 是**精确 host**，不许通配。
    `ctx.host.fs` 的实参**不做占位符替换**且要求绝对路径 —— 清单侧写 `${workspace}/x` 与插件侧传
@@ -220,8 +230,8 @@ doctor 的口径必须看懂：它只做**静态**判定（entry 文件存在且
 |---|---|---|
 | 设置页根本没有这个插件 | 目录名 ≠ `id` / 清单 JSON 坏 / `minAppVersion` 高于当前 app | 跑 `check_plugin.py` 看 error 级诊断 |
 | 插件在、启用后没反应 | 宿主没重扫/没激活（装配层只在启动、启用、`host/restart` 时激活） | `POST /api/extensions/host/restart`，再看该行诊断 |
-| 面板空白 / 显示占位 | 树非法（`irInvalid`）或超预算（`irBudgetExceeded`） | 用服务端 `ui_ir.validate(tree)` 本地复现，看 `code` + `path` |
-| 点了按钮界面不变 | 交互分支回了和上次**逐字相同**的树（本通道无 patch） | 让返回值带上变化量（计数、时间、状态） |
+| 面板空白 / 显示占位 | `data` 不合规（码名 `irInvalid`，历史包袱但语义已收敛）或超预算（`irBudgetExceeded`）；也可能是三向声明缺一条 | 本地用 `ui_panel_payload.validate_panel_data(data)` 复现；再查 `render: native` ↔ `client.panel` ↔ `server.ui.views` 是否同名齐备 |
+| 点了按钮界面不变 | 交互分支回了和上次**逐字相同**的 data（本通道无 patch） | 让返回值带上变化量（计数、时间、状态） |
 | 面板一片报错 / `nativeSourceRejected`（「入口类名固定（已废弃写法）」） | 入口还挂着 `@objc(BotChatPanelEntry)` 之类固定类名 | 删掉该注解，改用 `@_cdecl("botchat_panel_entry")` 导出入口 |
 | 面板一片报错 / `nativeEntryMissing` | 没导出 `@_cdecl("botchat_panel_entry")`（写错 / 导出两次 / entry 路径不在包内）、`apiVersion` ≠ 1 | 包内 `.swift` 的入口导出与清单 `client.panel.entry` |
 | 原生面板编译失败 | 用了门禁 API（出网/文件/子进程/dylib 相关）或不是 bundle 友好代码 | 只经 `data` 取数、只经 `host.dispatch` 动作 |

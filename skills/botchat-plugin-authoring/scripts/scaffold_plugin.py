@@ -4,11 +4,12 @@
 三种档位 ×（可选）五挂载点 ×（可选）工具能力：
 
     python3 scaffold_plugin.py --id acme.hello --dir ~/dev/plugins
-    #   ↑ ui 档（缺省）：IR 面板树 + 设置区 + 一条命令，挂 `panel`
+    #   ↑ ui 档（缺省）：面板 + 设置区 + 一条命令，挂 `panel`；
+    #     界面是包内 Panels/*.swift（`botchat.panel/1`），预制节点 IR 已下线
     python3 scaffold_plugin.py --id acme.echo --dir ~/dev/plugins --mode tool
     #   ↑ 纯工具档：只有 server.tool，没有界面
     python3 scaffold_plugin.py --id acme.chart --dir ~/dev/plugins --mode native
-    #   ↑ 原生档：ir 面板 + 包内 Panels/Main.swift（同一个视图声明 render: native）
+    #   ↑ 原生档：与 ui 档同一种渲染体，差别只在主视图的图标与 priority 缺省值
 
     # 五挂载点（缺省 panel）：panel / settings.section / sidebar.section /
     #                      composer.accessory / window
@@ -130,6 +131,13 @@ def _values(args: argparse.Namespace, *, tool_block: str = "", tool_register: st
     }
 
 
+def _server_root_args(raw: str | None) -> list[str]:
+    """把 `--server-root` 透传给 `check_plugin.py`；未给时不留空参。"""
+    if not raw:
+        return []
+    return ["--server-root", raw]
+
+
 def _tool_fragments(templates: Path, values: dict[str, str], *, enabled: bool) -> tuple[str, str]:
     """取两段工具片段；未启用时回两个空串（占位符被替换掉，不会残留）。"""
     if not enabled:
@@ -145,8 +153,8 @@ def main(argv: list[str] | None = None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "五挂载点只对 ui / native 有意义：panel / settings.section / sidebar.section /\n"
-            "composer.accessory / window。窄槽位（sidebar.section、composer.accessory）会自动换成\n"
-            "Row 根紧凑树 —— 它们的节点准入是白名单，面板那棵 Column 树会被整树拒渲染。"
+            "composer.accessory / window。第六个渲染位置 `client.row`（轮级行）不是 slot，\n"
+            "它是独立能力 kind，需要手写清单添加（每轮一行，单包条数上限 4）。"
         ),
     )
     parser.add_argument("--id", required=True, help="插件 id，同时是包目录名（如 acme.hello）")
@@ -156,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
         "--mode",
         choices=("ui", "tool", "native", "theme", "hook"),
         default="ui",
-        help="ui=IR 面板（默认）/ tool=纯工具 / native=编译版 SwiftUI 面板 / theme=主题包",
+        help="ui=带界面的插件（原生面板，默认）/ tool=纯工具 / native=同 ui，但缺省图标与优先级不同 / theme=主题包",
     )
     parser.add_argument("--version", default="0.1.0")
     parser.add_argument("--min-app-version", default="0.1.0")
@@ -183,6 +191,11 @@ def main(argv: list[str] | None = None) -> int:
         help="允许 builtin. 前缀（只给随 app 分发的内置主题包；缺省关闭）",
     )
     parser.add_argument("--no-check", action="store_true", help="不跑静态对账")
+    parser.add_argument(
+        "--server-root",
+        default=None,
+        help="serverSide 目录（转给 check_plugin.py；缺省自动探测或读 BOTCHAT_SERVER_ROOT）",
+    )
     parser.add_argument("--force", action="store_true", help="目标目录已存在时覆盖")
     args = parser.parse_args(argv)
 
@@ -291,7 +304,10 @@ def main(argv: list[str] | None = None) -> int:
         print("口径：本次只对账**清单**。`client.theme` 的载荷（theme.json）不在服务端 doctor 的")
         print("      覆盖范围内 —— 上面那步 41 角色 / 派生禁写 / 色值形态是本脚本按客户端判据自检的；")
         print("      对比度基线与派生回归只在客户端装载期判。")
-    completed = subprocess.run([sys.executable, str(checker), str(target)], check=False)
+    completed = subprocess.run(
+        [sys.executable, str(checker), str(target), *_server_root_args(args.server_root)],
+        check=False,
+    )
     return completed.returncode
 
 

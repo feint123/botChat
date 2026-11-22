@@ -22,14 +22,22 @@
         "view": "{{view}}",
         "title": "{{name}}",
         "icon": "square.grid.2x2",
-        "priority": 50
+        "priority": 50,
+        "render": "native"
       },
       {
         "slot": "settings.section",
         "view": "settings",
-        "title": "{{name}}设置"
+        "title": "{{name}}设置",
+        "render": "native"
       }
     ],
+    "client.panel": {
+      "views": [
+        { "view": "{{view}}", "entry": "Panels/Main.swift", "apiVersion": 1 },
+        { "view": "settings", "entry": "Panels/Settings.swift", "apiVersion": 1 }
+      ]
+    },
     "client.command": {
       "id": "{{command}}",
       "title": "打开{{name}}"

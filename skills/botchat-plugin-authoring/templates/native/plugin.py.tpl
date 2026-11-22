@@ -1,11 +1,8 @@
-"""{{name}} — 原生面板插件（`botchat.panel/1`）。
+"""{{name}} — 面板插件（`botchat.panel/1`）。
 
-清单里该 view 声明了 `"render": "native"`，因此视图函数 MUST 返回**数据对象**，
-不是 IR 节点树：服务端按清单的 `render` 选校验器（`ui_action` / `ui_panel_payload`），
-返回树会被当 data 校验并整帧降级。
-
-判据（docs/extension-panel-native.md §一）：需要 Chart / 热力图 / 拖拽 / 动画 / 非标准布局
-才用 native；其余情况用 IR —— 原生面板是逃生舱，不是默认档。
+清单里该 view 声明了 `"render": "native"`，因此视图函数 MUST 返回**数据对象**（不是节点树）：
+服务端按清单的 `render` 选校验器（`ui_action` / `ui_panel_payload`），写节点树会被当 data 校验
+并整帧降级。`botchat.ui/1`（预制节点 IR）已下线 —— 面板是宿主的唯一渲染体，不是「逃生舱」。
 
 data 的约束（服务端强制，失败只降级该 slot）：
 - 顶层 MUST 是 JSON 对象；≤256 KB；深度 ≤8；单数组 ≤2000 项。
@@ -22,8 +19,7 @@ _HITS: dict[str, int] = {}{{toolBlock}}
 def render_main(payload: dict[str, object]) -> dict[str, object]:
     """`{{slot}}` 挂载点的视图：渲染与交互共用。
 
-    交互参数来自 `payload["arguments"]`（原生面板 `host.dispatch("press", [...])` 落在这里），
-    而 IR 的 `Field` 走 `payload["values"]` —— 两种渲染体共用同一份动作语义时两个都要读。
+    交互参数来自 `payload["arguments"]`（原生面板 `host.dispatch("press", [...])` 落在这里）。
     """
     instance_key = str(payload.get("instanceKey") or "")
     key = instance_key or "-"

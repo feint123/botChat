@@ -4,9 +4,8 @@
 
 1. `python3 scripts/check_plugin.py <包目录>` —— 清单 / 包形态 / 原生面板门禁（离线，零副作用）。
 2. 本地跑载荷校验（纯函数，不需要宿主）：
-   - IR：`app.extensions.ui_ir.validate(tree)`
-   - 原生：`app.extensions.ui_panel_payload.validate_panel_data(data)`
-   片段见 `view-ir.md` §七。
+   `app.extensions.ui_panel_payload.validate_panel_data(data)`
+   上限：256 KB / 深度 ≤8 / 单数组 ≤2,000 项；行载荷另有 32 KiB（`ui_row_payload`）。
 3. 装好之后看 `GET /api/extensions`（该行的诊断列表）与 `GET /api/extensions/views`。
    客户端侧问题在设置页的插件详情里有诊断行。
 
@@ -54,11 +53,10 @@
 | `capabilityEntryMissing` | 声明了 view/工具但没注册，或 `client.view` 的 view 不在 `server.ui.views` | 让「清单 ↔ `register(ctx)`」逐字对上 |
 | `toolNameConflict` | 对外名撞车（插件内重名或与其他插件同 id 前缀） | 改工具名 |
 | `permissionDenied` | 未授权 / 渲染期写盘 / 路径越界 / 清单没请求的键 | 补 `permissions` + 授权端点；把写操作移出渲染路径 |
-| `irInvalid` | 树非法（禁用键、未知 kind、坏取值、tone 越界） | 用 `ui_ir.validate` 拿到 `code + path`，按 `view-ir.md` 改 |
-| `irBudgetExceeded` | 超 2000 节点 / 512 KB / 深度 64 | 分页（`List` 限条数）或裁剪 |
-| `viewNotDeclared` | 该 view 没有任何已启用插件声明 | 检查 `client.view` 与启用态 |
-| `actionRejected` | 视图与实例不匹配、节点非法 | 交互只回整棵树；`nodeId` 用声明过的那个 |
-| `extensionDisabled` | 渲染时插件已停用 | 回占位树是预期行为；重新启用 + 重启宿主 |
+| `irInvalid` | **码名是 IR 时代的历史包袱，语义已收敛为「这份载荷不合规」**（码名 MUST NOT 改名：改名老客户端认不出）。实际成因：`data` 顶层不是对象、键名不匹配 `[A-Za-z_][A-Za-z0-9_]*`、键名以 `_` 开头、图片带了 `data:` / 本地路径 / 外链 | 按诊断里的字段路径改 `data` 构造；本地用 `validate_panel_data` 复现 |
+| `irBudgetExceeded` | 同样只是码名遗留：`data` 序列化超 256 KB / 嵌套超 8 层 / 单数组超 2,000 项（**行载荷为 32 KiB**） | 分页或减少字段；MUST NOT 指望宿主截断后继续渲染（超限是整帧拒 + 占位） |
+| `viewNotDeclared` | 该 view 没有任何已启用插件声明（HTTP 4xx，`core/errors.py`） | 检查 `client.view` 与启用态 |
+| `extensionDisabled` | 渲染时插件已停用 | 宿主占位是预期行为；重新启用后内容自动回来（容器保留位置） |
 
 ### Hook 事件专属诊断
 
@@ -74,7 +72,7 @@
 |---|---|---|
 | `nativeSourceRejected` | 源码门禁命中 | 按 `native-panel.md` §六 逐条改；**注释里出现禁用词也算**；入口挂固定类名也归这里（文案「入口类名固定（已废弃写法）」） |
 | `nativeEntryMissing` | 找不到入口（没导出 `@_cdecl("botchat_panel_entry")` / 导出两次 / entry 指向的文件不在包里 / 客户端用了自己拼的根路径） | 改入口导出与 `client.panel.entry`；包根只认服务端下发的 `roots` |
-| `nativeToolchainMissing` | 本机没有 `swiftc` | 装 Xcode Command Line Tools；同插件 IR 视图仍可用 |
+| `nativeToolchainMissing` | 本机没有 `swiftc` | 装 Xcode Command Line Tools；插件 UI 只显示安装指引占位，无旁路渲染 |
 | `nativeCompileFailed` | 编译失败（只回含 `error:` 的行） | 看那几行；常见是没有 `import SwiftUI`／用了 `@State` 却每次重建视图 |
 | `nativeLoadFailed` | bundle 加载失败 | 多半是模块名/类名冲突：入口 MUST 是 `@_cdecl("botchat_panel_entry")` 导出一次、入口类型不得挂固定 ObjC 类名 |
 | `nativeConsentDeclined` | 用户没同意编译运行该面板 | 是人的选择，不是 bug |
@@ -107,5 +105,5 @@
 
 - 契约正文：`docs/extension-plugin-contract.md`（清单 / 接口 / 诊断码 / 未实现清单）。
 - 三个官方样例（可直接跑）：`serverSide/examples/extensions/`
-  （`examples.hello-tool` 纯工具、`examples.hello-panel` IR + 窗口 + 原生面板并排、`examples.todo-list` 持久化 + 工具 + 原生面板）。
+  （`examples.hello-tool` 纯工具、`examples.hello-panel` 面板 + 窗口 + 设置区多槽位、`examples.todo-list` 持久化 + 工具 + 面板）。
 - 行为真相：`serverSide/tests/extensions/**`。读测试比读文档快，且测试锁的就是当前行为。

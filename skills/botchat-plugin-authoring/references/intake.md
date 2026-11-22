@@ -1,7 +1,7 @@
 # 问诊 / 选型 / 修改 —— 唯一参考页
 
 **这页什么时候用**：用户只说「我想要个 botChat 插件」而没说形态时（§一 / §二）、要判定「他这句原话该落哪一档」时（§三）、问诊完要把需求卡翻成清单字段时（§四）、包已存在要改或修不生效时（§五）、想把做法沉淀成「别这么干」时（§六）。
-口径三源：`docs/extension-plugin-contract.md`（清单 / 接口 / 诊断码）、`docs/extension-plugin-ui.md`（IR）、`docs/extension-panel-native.md`（原生面板）。**与代码冲突以代码为准**，冲突处标注「本页口径 → 代码位置」。下列片段里公共清单字段一律省略：`schemaVersion:2` / `id` / `name` / `version` / `minAppVersion` / `trust` / `permissions`。
+口径两源：`docs/extension-plugin-contract.md`（清单 / 接口 / 诊断码）、`docs/extension-panel-native.md`（插件 UI 唯一事实源；`botchat.ui/1` 预制节点 IR 已下线）。**与代码冲突以代码为准**，冲突处标注「本页口径 → 代码位置」。下列片段里公共清单字段一律省略：`schemaVersion:2` / `id` / `name` / `version` / `minAppVersion` / `trust` / `permissions`。
 
 ## 一、七类插件目录
 
@@ -22,45 +22,57 @@
 "activationEvents": ["onTool:<id 归一>__<name>"]
 ```
 
-### T2 `ui` IR 面板
+### T2 `ui` 面板（= T3，同一种渲染体）
+
+> `botchat.ui/1`（预制节点 IR）已下线。T2 与 T3 产出的包**同形**：
+> `server.ui` + `client.view(render: native)` + `client.panel` + 包内 `Panels/*.swift`。
+> 保留两个 ID 只为兼容旧对话与脚本，不再有「先用 IR、表达不了才升原生」这条路。
 
 | 项 | 内容 |
 |---|---|
-| 定位 · 适用 | 17 个预制节点拼树，宿主负责排版与取色（默认档，能表达就别升 T3）。「想要个面板看数据」「加个设置页」。 |
-| 不适用 | Chart / 热力图 / 拖拽 / 动画 / 非标准布局 —— IR 表达不了，升级 T3。 |
-| 起步 · 闭环 | `python3 $SKILL/scripts/scaffold_plugin.py --mode ui --slot <slot> --dir ~/dev/plugins --id <id>`；闭环 = 打开面板先看到树，**点一次按钮数字要变**。 |
-| 代价与坑 | 渲染 MUST 纯函数（渲染期 `fs.write` / `net.fetch` 直接 `permissionDenied`）；`tone` 只有 27 个角色；`nodeId` / `name` 不许绑定。 |
+| 定位 · 适用 | 面板 / 设置页 / 侧栏段 / 输入条配件；界面写 SwiftUI，视觉 MUST 用 `BotChatKit` 组件与角色。「想要个面板看数据」「加个设置页」。 |
+| 不适用 | 只要 Agent「做得到」、人不需要看界面 —— 那是 T1，别为它开面板。 |
+| 起步 · 闭环 | `python3 $SKILL/scripts/scaffold_plugin.py --mode ui --slot <slot> --dir ~/dev/plugins --id <id>`；闭环 = 打开面板看到数据，**点一次按钮数字要变**。 |
+| 代价与坑 | 渲染 MUST 纯函数（渲染期 `fs.write` / `net.fetch` 直接 `permissionDenied`）；三向声明缺一条就撤下该视图；禁字面色值/字体/像素。 |
 
 五槽位选择表（`slot` 是封闭集合，集合外取值**跳过该条、不拒包**）：
 
-| slot | 用户会怎么说 | 预算 / 节点白名单 | 输入 | 尺寸与落点 |
-|---|---|---|---|---|
-| `panel` | 「给我开一栏看板」 | 2000 / 全部 | 允许 | 随列宽（宽 ≥300pt），列带 `ExtensionPanelColumn` |
-| `window` | 「想要个独立小窗」 | 2000 / 全部 | 允许 | 下限 320×240（`size.minWidth/minHeight` 可抬高），见下 |
-| `composer.accessory` | 「输入条上加个开关」 | 40 / `Row` `Text` `Button` `Toggle` | 只许 `Toggle` | 高 ≤44pt；单占位选举 + ✕ 冷却 30 分钟 |
-| `sidebar.section` | 「侧栏加个分区」 | 200 / `Row` `Text` `Button` `Progress` `List` | 禁止 | 高 ≤240pt 超出滚动；全部占用者都渲染 |
-| `settings.section` | 「加个设置页」 | 300 / 全部（禁 `List`） | 允许 | 宽度随页，插件详情页 `ExtensionDetailPanelSection` |
+| slot | 用户会怎么说 | 输入 | 尺寸与落点 |
+|---|---|---|---|
+| `panel` | 「给我开一栏看板」 | 允许 | 随列宽（宽 ≥300pt），列带 `ExtensionPanelColumn` |
+| `window` | 「想要个独立小窗」 | 允许 | 下限 320×240（`size.minWidth/minHeight` 可抬高），见下 |
+| `composer.accessory` | 「输入条上加个开关」 | 允许 | 高 ≤44pt；单占位选举 + ✕ 冷却 30 分钟 |
+| `sidebar.section` | 「侧栏加个分区」 | 允许 | 高 ≤240pt 超出滚动；全部占用者都渲染 |
+| `settings.section` | 「加个设置页」 | 允许 | 宽度随页，插件详情页 `ExtensionDetailPanelSection` |
+
+> **载荷上限对所有 slot 一致**（`data` 256 KB / 深度 ≤8 / 单数组 ≤2,000 项）：IR 时代那套
+> 「按 slot 分节点预算与白名单」已随 IR 删除，尺寸由宿主钳制。
+> 第六个渲染位置 `client.row`（轮级行）**不是 slot**：它是独立能力 kind，走行载荷（2 KiB 上下文、32 KiB 上限），无实例键、无 `rev`、不进快照 LRU。
 
 **`window` 的降级事实**：经 QuickBar 插件命令打开时按「面板列 + 一条提示」呈现（降级必须可见，MUST NOT 静默换呈现）——`ExtensionPluginCommandRunner.swift:17`、`ExtensionSlotCatalog.swift:64`。**本页口径 → 代码现状**：HEAD 的 `QuickBarHostBridge.swift:134` 已把 `slot == "window"` 交给 `ExtensionPanelWindowController`（`NSPanel`，`ExtensionPanelWindow.swift:72`）打开，上述两处注释尚未同步；仅 `requestOpen(extensionPanel:)` 路径走面板列。
 
 ```json
-// <id>/manifest.json + <id>/plugin.py（register(ctx) → ctx.view(...) / ctx.command(...)）
+// <id>/manifest.json + <id>/plugin.py（register(ctx) → ctx.view(...) / ctx.command(...)）+ <id>/Panels/*.swift
 "capabilities": {
   "server.ui": { "entry": "plugin.py", "views": ["main", "settings"] },
-  "client.view": [{ "slot": "panel", "view": "main", "title": "看板", "icon": "square.grid.2x2", "priority": 50 },
-                  { "slot": "settings.section", "view": "settings", "title": "看板设置" }],
+  "client.view": [{ "slot": "panel", "view": "main", "title": "看板", "icon": "square.grid.2x2", "priority": 50, "render": "native" },
+                  { "slot": "settings.section", "view": "settings", "title": "看板设置", "render": "native" }],
+  "client.panel": { "views": [{ "view": "main", "entry": "Panels/Main.swift", "apiVersion": 1 },
+                            { "view": "settings", "entry": "Panels/Settings.swift", "apiVersion": 1 }] },
   "client.command": { "id": "<id>.open", "title": "打开看板" } }
 ```
-`client.view.view` MUST 在 `server.ui.views` 里（否则解码期剔除 `capabilityEntryMissing`）；`client.command` 只认**单对象**。
+`client.view.view` MUST 在 `server.ui.views` 里（否则解码期剔除 `capabilityEntryMissing`）；
+每个 `render: native` 的 view MUST 在 `client.panel.views` 里有同名条目
+（否则整条 `client.view` 被撤下，面板打不开）；`client.command` 只认**单对象**。
 
-### T3 `native` 原生 SwiftUI 面板
+### T3 `native` 原生面板（= T2）
 
 | 项 | 内容 |
 |---|---|
-| 定位 · 适用 | 包内自带 `.swift`，客户端首次挂载时 `swiftc` 编成 bundle，在**宿主主进程内同权运行**。要图表 / 热力图 / 拖拽 / 动画。 |
-| 不适用 | 文字、列表、表单、按钮、进度 —— 用 IR，写原生是过度设计。 |
+| 定位 · 适用 | 与 T2 同形。包内自带 `.swift`，客户端首次挂载时 `swiftc` 编成 bundle，在**宿主主进程内同权运行**。 |
+| 不适用 | 隐藏档位：不存在「IR 不得写原生」的判据，两者都是原生面板。 |
 | 起步 · 闭环 | `python3 $SKILL/scripts/scaffold_plugin.py --mode native --slot <slot> --dir ~/dev/plugins --id <id>`；闭环 = 门禁预检 → `validate_panel_data(...)` → 装/启用/重启 → 点按钮数字变且滚动与输入状态留住。 |
-| 代价与坑 | 编译链代价：首次挂载 `swiftc -Onone` 约 0.83s、**不是沙箱**（门禁只挡误用与主题腐烂）、编译失败用户只见占位、无工具链报 `nativeToolchainMissing`（同包 IR 视图照常工作）。 |
+| 代价与坑 | 编译链代价：首次挂载 `swiftc -Onone` 约 0.83s（`-O` 首编实测约 5.31s）、**不是沙箱**（门禁只挡误用与主题腐烂）、编译失败用户只见占位、无工具链报 `nativeToolchainMissing`。 |
 
 三处声明必须同时成立，缺一条即撤下：`client.view.render = "native"`、`client.panel.views[].view` 同名、`server.ui.views` 含该 view。`apiVersion` 只认 `1`；`entry` 是包内相对路径、`.swift`、**单文件 ≤256 KB**（≤4000 行）；入口 MUST 用 `@_cdecl("botchat_panel_entry")` 导出恰好一次，MUST NOT 给入口类挂固定 ObjC 类名（`@objc(固定名)` 已被门禁拒，报「入口类名固定（已废弃写法）」）。`PanelSourceGate` 门禁：import 只许 `SwiftUI` / `AppKit` / `Foundation` / `Observation` / `CoreGraphics` / `AVKit` / `AVFoundation`；禁用符号子串匹配（`FileManager` `URLSession` `Process(` `NSTask` `dlopen` `NSWindow(` …，**注释里出现也算**）；写死颜色一律拒。
 
@@ -134,7 +146,7 @@
 | Q5 | 是否需要原生渲染 | 需要（Chart / 拖拽 / 动画 / 非标准布局）/ 不需要 | T1、T4 跳过 |
 | Q6 | 怎么装、给谁用 | 自用直装（`Extensions/` 或 install API）/ 随 app 分发 / 主题包 | 恒问（T4 只有「随 app 分发」） |
 
-Q1 判据一句话：T1 只要 Agent「做得到」、人不需要看见界面 · T2 要一块界面且内容能用文字/列表/按钮/开关/表单说完 · T3 要 Chart / 热力图 / 拖拽 / 动画 / 非标准布局、IR 表达不了 · T4 只换观感（配色）、不要任何代码与能力 · T5 同一件事既要 Agent 能调、又要人能看到能点 · T6 包已经有了，要改 / 要修。
+Q1 判据一句话：T1 只要 Agent「做得到」、人不需要看见界面 · T2/T3 要一块界面（两者同形，都是原生 SwiftUI 面板，T2 是常用 ID）· T4 只换观感（配色）、不要任何代码与能力 · T5 同一件事既要 Agent 能调、又要人能看到能点 · T6 包已经有了，要改 / 要修。
 
 「用户这样答 ⇒ 就这么定」：
 
@@ -174,7 +186,7 @@ Q1 判据一句话：T1 只要 Agent「做得到」、人不需要看见界面 �
 | 用户原话 | 类型与落点 |
 |---|---|
 | 想让 Agent 能查我的待办 | T1 `tool`；`server.tool` + `tools.py`，零权限起步 |
-| 想要个面板看数据 | T2 `ui`；`panel` + IR 树 |
+| 想要个面板看数据 | T2 `ui`；`panel` + `client.panel` + 包内 SwiftUI |
 | 想要图表热力图拖拽 | T3 `native`；`render: "native"` + 包内 `Panels/*.swift` |
 | 界面太素想换配色 | T4 `theme`；`schemaVersion: 1` + 41 角色 `theme.json`，随 app 分发 |
 | 插件装了不生效 | T6；先查启用态与 `host/restart`（§五 第 4 步） |
@@ -257,12 +269,12 @@ id: acme.todo            # 包目录名 MUST 等于它，MUST NOT 以 builtin. �
 
 | 反模式 | 为什么会坏 | 正确做法 |
 |---|---|---|
-| 为小改上原生面板 | 编译链 + 主进程同权执行 + 编译失败只留占位，成本全落用户侧 | 能用 17 个节点表达就用 IR；Chart / 拖拽 / 动画才升 T3 |
+| 为小改开面板 | 编译链 + 主进程同权执行 + 编译失败只留占位，成本全落用户侧 | 只要 Agent 能调就选 T1（不开界面）；确实需要人才看的内容才开面板 |
 | `trust: "data"` 却声明工具 | 代码能力被拒（warning），工具永远不出现 | 有代码就写 `sandboxed`（外部插件缺省档） |
 | 两套 entry（`server.ui.entry` ≠ `server.tool.entry`） | `server.ui` 被静默撤下：工具好用、面板打不开 | 一个 `register(ctx)`、一份 entry，两条能力指向同一文件 |
 | 声明与注册不一致（`views` / `tools` / 命令 id） | 声明了没注册 ⇒ `capabilityEntryMissing`；注册了没声明 ⇒ 永远挂不上 | 清单字符串与 `ctx.view/tool/command` 逐字对齐，改完跑 `check_plugin.py` |
 | 渲染期写盘或出网 | `fs.write` / `net.fetch` 在渲染路径被直接拒（`permissionDenied`），且渲染 MUST 纯函数 | 读可放渲染首帧，写只放交互分支与工具里 |
-| 在 IR 里写色值 / 像素 | `color` / `font` / `width` / `padding` 这些键名本身非法，整树 `irInvalid` | 颜色只走 `tone`（27 角色），字号走 `style` 档，尺寸交给 slot |
+| 在面板里写死色值 / 字号 / 像素 | 门禁一律拒（`nativeSourceRejected`） | 用 `BotChatKit` 组件与角色（`docs/ui-kit.md`），取色只经 `host.panelColor(...)` |
 | 指望 `shortcut` 注册热键 | 客户端不注册任何热键，它只是提示文本；写错只丢这条提示 | 要入口就写 `client.command`（进 QuickBar 检索），别承诺键位 |
 | 用 `${workspace}` 传 `ctx.host.fs` 实参 | 清单侧被 `expand_prefix` 展开、插件侧只 `expanduser` ⇒ 判越界 fail-closed | 两侧都用 `~` 前缀路径 |
 | 把凭据塞进 `state` | `state` 只有 `workspaceName` / `conversationTitle` 白名单键，凭据拿不到也不该给 | 需要凭据就做成用户显式授权后由宿主代发，别写进面板上下文 |
