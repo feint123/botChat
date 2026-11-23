@@ -3,6 +3,17 @@
     <channel>
         <title>botChat</title>
         <item>
+            <title>1.1.27</title>
+            <pubDate>Mon, 23 Nov 2026 11:25:33 +0800</pubDate>
+            <link>https://github.com/feint123/botChat</link>
+            <sparkle:version>29</sparkle:version>
+            <sparkle:shortVersionString>1.1.27</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.1</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <sparkle:releaseNotesLink>https://feint123.github.io/botChat/notes/botChat-1.1.27.html</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/feint123/botChat/releases/download/updates/botChat-1.1.27.zip" length="66271246" type="application/octet-stream" sparkle:edSignature="QPEJ2kUqpxZC6Vz6M9QWzCjl05IAThHeX7M4Vz/ezfywIJbDtP3oOOLdiYv/1hPqG8TeZr7XHbpIrUDHEa2aBQ=="/>
+        </item>
+        <item>
             <title>1.1.26</title>
             <pubDate>Sun, 22 Nov 2026 18:48:21 +0800</pubDate>
             <link>https://github.com/feint123/botChat</link>
@@ -100,17 +111,6 @@
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
             <sparkle:releaseNotesLink>https://feint123.github.io/botChat/notes/botChat-1.1.18.html</sparkle:releaseNotesLink>
             <enclosure url="https://github.com/feint123/botChat/releases/download/updates/botChat-1.1.18.zip" length="53760421" type="application/octet-stream" sparkle:edSignature="XrpsGZYzSSyz4ZTXh46tIaVS0gFu4GbechLqeMgm6P4SnnDqWxCtL2URL8p1+y8RH/P2xuTJa3UIuE4tma2EBg=="/>
-        </item>
-        <item>
-            <title>1.1.17</title>
-            <pubDate>Sat, 14 Nov 2026 20:27:55 +0800</pubDate>
-            <link>https://github.com/feint123/botChat</link>
-            <sparkle:version>19</sparkle:version>
-            <sparkle:shortVersionString>1.1.17</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.1</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <sparkle:releaseNotesLink>https://feint123.github.io/botChat/notes/botChat-1.1.17.html</sparkle:releaseNotesLink>
-            <enclosure url="https://github.com/feint123/botChat/releases/download/updates/botChat-1.1.17.zip" length="53626170" type="application/octet-stream" sparkle:edSignature="WbDotkeF+KUFvfI8U9Q9AZvqJ3rqiM957+jjcAIBtoQ4ZR3GBuEgoRnb+CjwiZCKBKZN0eDqZ5l7upB49kaCCw=="/>
         </item>
     </channel>
 </rss>
