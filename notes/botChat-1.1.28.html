@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.28</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.28</h1>
+<h2>botChat 1.1.28</h2>
+<p>本轮主线是子代理发言与「在场回执」的可读性：多个子助手不再共用一张嘴，各自有了随名字派生的语体；父轮结束后子代理的进度、结论与失败行能实时落到目标轮、不再被丢弃；聊天区贴底胶囊补齐了提交、工作、收束、失败四个时刻的回执。侧栏会话行升级为群头像，模型选择浮层把当前生效项置顶。</p>
+<h3>新增与改进</h3>
+<ul>
+  <li><strong>子助手各有语体</strong>：同轮并行的多个子助手不再用同一套说辞。态度、起手、口癖、收尾按助手名字确定性派生（九套策展语体，与头像共用视觉索引），一眼能分辨谁在说；事实与约束（禁令、长度、格式）不受影响，主助手语体不变。</li>
+  <li><strong>聊天区四帧在场回执</strong>：贴底胶囊会显示「正在提交」「工具在跑」「刚收束」「工具失败」四个时刻，收尾帧汇报本轮步数，并在末尾追加「本轮改动 N 个文件」。</li>
+  <li><strong>侧栏会话行群头像</strong>：群会话行改为叠压成员头像加 <code>+N</code> 计数与活动徽标（含「等待用户」档），头像放大到 22pt，行几何与活动落点对齐。</li>
+  <li><strong>已选模型置顶</strong>：模型选择浮层把当前生效模型从各 provider 分组里提出来，置顶成「已选择」独立分组，搜索与滚动时更容易确认。</li>
+  <li><strong>会话模式选择器移到零消息空态</strong>：模式选择从侧栏工具栏搬到会话空态（上下文胶囊上方）的段式控件里；模式仍由第一条消息锁定，之后不再出现，侧栏工具栏只剩「新建工作空间」。</li>
+  <li><strong>提问的「是/否」更明确</strong>：布尔类提问改为「是 / 否」两个互斥选项，不再是一个勾选行。</li>
+  <li><strong>记忆满额改为统一整理轮</strong>：记忆用满后不再直接静默丢弃候选，而是一次统一决策——同时决定删哪些旧条目、这份候选值不值得留下，重建逐字节取自原文、模型只给索引不产出正文；记忆块头在满额时标注「已满额」。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li><strong>子代理进度行实时上屏</strong>：父轮收口时子代理往往还在跑，其进度、结论、失败行此前会被丢弃、要切走会话再切回才可见。现在改为零额外请求当场落到目标轮；已展开的轮被内存回收或降级时，实时落下的行不再闪断。</li>
+  <li><strong>assist 建议恢复产出</strong>：切到思考型小模型后，assist 曾连续零产出（思考吃满预算、正文为空）。现改走统一生成出口并关闭思考，恢复正常。</li>
+  <li><strong>聊天模式补单条工具停止入口</strong>：工具在跑、且没有行内停止入口时，停止条会补位。</li>
+  <li><strong>系统类发言头像固定</strong>：系统失败、决策卡等发言头像固定为机器人，不再随会话漂移成随机动物。</li>
+</ul>
+<h3>需要动作</h3>
+<ul>
+  <li>记忆归档不再生成 <code>BACKLOG.md</code>，并移除 <code>MEMORY_ARCHIVE_BACKLOG_ENABLED</code>、<code>MEMORY_ARCHIVE_BACKLOG_MAX_ITEMS</code> 两个配置项；工作区里现存的 <code>BACKLOG.md</code> 属历史产物，可自行删除。</li>
+  <li>记忆满额整理新增四个配置项：<code>MEMORY_COMPACT_ENABLED</code>、<code>MEMORY_COMPACT_TIMEOUT_SECONDS</code>、<code>MEMORY_COMPACT_TRASH_MAX_CHARS</code>、<code>MEMORY_COMPACT_MIN_KEEP_RATIO</code>（一般无需改动）。</li>
+</ul>
+</body>
+</html>
