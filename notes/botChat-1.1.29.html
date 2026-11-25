@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.29</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.29</h1>
+<p>本轮把主助手与子助手的发言统一为同档呈现，并新增主助手收尾结论；用量增加按用途拆分。另修复记忆整理、定时任务、会话删除与用量时间显示四处问题。</p>
+<h3>功能新增</h3>
+<ul>
+  <li>主助手在过程播报之后会另生成一句话作为本轮收尾结论，与过程自述分开呈现。</li>
+  <li>用量页新增「按用途拆分」，可分别查看主链路、后台小模型与读图各自消耗的 token。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li>主助手与子助手的发言统一为第一人称、逐字流式出现；主助手的过程自述不再以「摘要」小字样式带省略号与时间戳显示，而是与子助手发言同档呈现。</li>
+  <li>同一时刻只允许一句发言落行，并加入固定节律，多任务并行时不会撞在一起，也不会集体沉默。</li>
+  <li>子助手的过程自述会带上自己此前说过的话，不再每条都像初次开口、反复讲同一件事。</li>
+  <li>发言措辞不再套用固定句式与示例，长任务里同一个子助手不会越说越像同一句。</li>
+  <li>上下文用量与轮次统计在工具执行期间就实时刷新，不再等到本轮结束才跳一次。</li>
+  <li>全应用动效收敛为一套时长与曲线：高频场景更快更利落，仅操作结果反馈保留轻微回弹；开启「减弱动态效果」后，布局变化的动画不再直接硬跳。</li>
+  <li>用户消息气泡的折叠阈值由 2 行放宽到 15 行，长消息不必点开就能读完整。</li>
+  <li>全应用时间文案统一为中文并跟随系统时区，相对时间（刚刚 / N 分钟前 / N 天前）口径一致，跨时区后不再停留在旧时区。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li>修复记忆整理在账号绑定的模型服务下恒报「未登录」，导致整理长期不生效的问题。</li>
+  <li>修复定时任务在应用重启后触发时间被不断推后、始终不自动执行的问题。</li>
+  <li>修复删除消息较多的会话时界面长时间卡死的问题（此前上千条消息的会话需要数十秒到两分钟以上）。</li>
+  <li>修复用量统计的时间显示错位：预算重置时间与小时刻度改按本地时间显示，按天、周、月的归属仍按 UTC 并在提示中说明。</li>
+</ul>
+</body>
+</html>
