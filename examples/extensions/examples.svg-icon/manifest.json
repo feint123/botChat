@@ -26,7 +26,8 @@
         "icon": {
           "svg": "Icons/mark.svg"
         },
-        "priority": 20
+        "priority": 20,
+        "render": "native"
       },
       {
         "slot": "sidebar.section",
@@ -36,7 +37,8 @@
           "svg": "Icons/gradient.svg",
           "tint": "original"
         },
-        "priority": 20
+        "priority": 20,
+        "render": "native"
       },
       {
         "slot": "settings.section",
@@ -45,8 +47,28 @@
         "icon": {
           "svg": "Icons/wide.svg",
           "tint": "template"
-        }
+        },
+        "render": "native"
       }
-    ]
+    ],
+    "client.panel": {
+      "views": [
+        {
+          "view": "main",
+          "entry": "Panels/SvgIconMain.swift",
+          "apiVersion": 1
+        },
+        {
+          "view": "badge",
+          "entry": "Panels/SvgIconBadge.swift",
+          "apiVersion": 1
+        },
+        {
+          "view": "about",
+          "entry": "Panels/SvgIconAbout.swift",
+          "apiVersion": 1
+        }
+      ]
+    }
   }
 }

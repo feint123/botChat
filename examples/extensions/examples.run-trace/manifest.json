@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.run-trace",
+  "name": "运行轨迹（样例插件）",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": [
+    "onSlot:panel:run-trace"
+  ],
+  "permissions": {
+    "conversation": [
+      "read"
+    ]
+  },
+  "capabilities": {
+    "server.ui": {
+      "entry": "ui.py",
+      "views": [
+        "run-trace"
+      ]
+    },
+    "client.view": [
+      {
+        "slot": "panel",
+        "view": "run-trace",
+        "title": "运行轨迹",
+        "icon": "chart.bar.xaxis",
+        "render": "native"
+      }
+    ],
+    "client.panel": {
+      "views": [
+        {
+          "view": "run-trace",
+          "entry": "Panels/RunTrace.swift",
+          "apiVersion": 1
+        }
+      ]
+    }
+  }
+}

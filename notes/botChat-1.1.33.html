@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>botChat 1.1.33</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; max-width: 720px; padding: 32px 20px 64px;
+         font: 15px/1.7 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: rgba(127,127,127,.16); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  pre { background: rgba(127,127,127,.12); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  a { color: #0a66c2; }
+</style>
+</head>
+<body>
+<h1>botChat 1.1.33</h1>
+<p>1.1.33 起，会话区恒为聊天流：窗口工具栏上的「轨迹 / 聊天」两态开关已移除，过程明细改由可选的「运行轨迹」插件面板承担。服务端的旁路发言链（接话、进度播报、子代理发言、结果语音、收尾句）随之恒开。另修复主管进度播报在流式分片下丢失资源引用的问题。</p>
+<h3>需要动作</h3>
+<ul>
+  <li><strong>会话区不再有轨迹表格视图</strong>。该开关此前缺省为关，即缺省形态就是逐条展开的轨迹表格；升级后对话区一律是聊天流，工具调用与思考不再在会话区逐条铺开。</li>
+  <li><strong>查看过程改走插件面板</strong>。消息气泡右下角的「⋯ 查看完整过程」入口已删除。需要看「哪一轮慢、哪个子代理最耗、哪次工具调用失败」时，用插件面板：样例包「运行轨迹」（<code>examples.run-trace</code>）随本版同步到站点样例目录（<code>https://feint123.github.io/botChat/examples/extensions/</code>），取到该目录后按设置 → 插件 →「安装…」选择目录即可，装完为「未启用」，需再启用并授予「会话读取」权限。插件不在发行包内，故不装则没有过程面板。该面板只给轮 / 子代理 / 工具的时长与状态，不含正文、工具参数与 diff；正文仍完整保存，回看走聊天流。</li>
+  <li><strong>旁路发言恒开，总开关已移除</strong>。接话、进度播报、子代理发言、结果语音与收尾句不再受「聊天模式」约束，每轮的模型调用次数与相应开销会高于此前关闭状态；此前靠聊天模式总开关控制这部分开销的手段已失效。若要单独关掉某个链，仍可用各链自己的既有配置，例如 <code>SUBAGENT_NOTE_MAX_PER_RUN=0</code> 关闭子代理进度发言。</li>
+</ul>
+<h3>功能新增</h3>
+<ul>
+  <li>新增只读的「会话轨迹读口」：插件在清单里声明 <code>permissions.conversation: ["read"]</code> 后，可读取当前会话「轮 → 子代理 → 工具」三层的时长与状态，用来画自己的过程审计面板。读口只给时长与状态，不下发消息正文、工具参数原文与 diff；读哪个会话由宿主绑定，插件无法指定，因此不会串到别的会话。</li>
+  <li>设置 → 插件 → 详情 → 权限里新增「会话读取」权限项，与既有三态矩阵同口径（已授 / 待授 / 不可授）。仅当安装的插件声明了该权限才出现；未授权时插件读轨迹会被拒，面板明确提示没有会话读权限，而不是显示成「这个会话没有轮次」。</li>
+  <li>新增样例插件「运行轨迹」：把当前会话最近若干轮的「轮 → 子代理 → 工具」三层轨迹画成按耗时归一的账本，进行中 / 成功 / 失败三色区分，可展开查看单层详情，并有刷新按钮取最新状态。</li>
+  <li>面板在数据装不下时会如实说明「还有 N 轮 / N 项工具 / N 个子代理未显示」，不会把「少了」显示成「就这些」。</li>
+</ul>
+<h3>改进</h3>
+<ul>
+  <li>子会话详情不再随模式在「聊天皮肤 / 轨迹表格」之间变化，恒定与主会话同一套呈现，不再出现两面观感不一致。</li>
+</ul>
+<h3>修复</h3>
+<ul>
+  <li>修正主管进度播报在特定流式分片下静默丢失资源引用的问题：当终稿正文与首帧恰好逐字节相同时，本应挂在该气泡下的子代理碰过的图片与文件会整条缺失、且界面与日志都不报错；现在定稿写入始终执行，资源条稳定出现。</li>
+</ul>
+</body>
+</html>

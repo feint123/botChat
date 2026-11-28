@@ -35,6 +35,11 @@
           "view": "main",
           "entry": "Panels/Todo.swift",
           "apiVersion": 1
+        },
+        {
+          "view": "settings",
+          "entry": "Panels/Settings.swift",
+          "apiVersion": 1
         }
       ]
     },
@@ -60,7 +65,8 @@
         "slot": "settings.section",
         "view": "settings",
         "title": "待办清单设置",
-        "icon": "gearshape.2"
+        "icon": "gearshape.2",
+        "render": "native"
       }
     ],
     "client.command": {

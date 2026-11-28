@@ -25,7 +25,8 @@
         "view": "main",
         "title": "Hello 面板",
         "icon": "hand.wave",
-        "priority": 10
+        "priority": 10,
+        "render": "native"
       },
       {
         "slot": "window",
@@ -35,13 +36,15 @@
         "size": {
           "minWidth": 360,
           "minHeight": 240
-        }
+        },
+        "render": "native"
       },
       {
         "slot": "settings.section",
         "view": "settings",
         "title": "Hello 设置",
-        "icon": "slider.horizontal.3"
+        "icon": "slider.horizontal.3",
+        "render": "native"
       },
       {
         "slot": "panel",
@@ -59,6 +62,21 @@
     },
     "client.panel": {
       "views": [
+        {
+          "view": "main",
+          "entry": "Panels/HelloMain.swift",
+          "apiVersion": 1
+        },
+        {
+          "view": "compact",
+          "entry": "Panels/HelloCompact.swift",
+          "apiVersion": 1
+        },
+        {
+          "view": "settings",
+          "entry": "Panels/HelloSettings.swift",
+          "apiVersion": 1
+        },
         {
           "view": "native",
           "entry": "Panels/Hello.swift",

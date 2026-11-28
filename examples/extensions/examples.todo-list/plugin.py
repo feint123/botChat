@@ -21,20 +21,25 @@
 
 `ui.render` 期宿主禁止一切写型调用（`host_plugin_api._reject_write_during_render` 会直接抛
 `permissionDenied`），所以：**读**盘发生在首次渲染（`_ensure_loaded`），**写**盘只发生在
-`ui.action` 与工具调用里。渲染函数因此是纯函数（同一输入同一棵树），副作用只在 handler 层。
+`ui.action` 与工具调用里。渲染函数因此是纯函数（同一输入同一份 data），副作用只在 handler 层。
 
-## 渲染体：原生面板
+## 渲染体：两个视图都是原生面板
 
-`panel` 槽的 `main` 视图声明为 `render: "native"`（清单 `client.panel` 指向
-`Panels/Todo.swift`），因此 `view_main` 返回的是 **data**（`botchat.panel/1`）而不是 IR 树；
-`settings` 仍是 IR。两件事 MUST 同时成立，否则服务端会把 data 当 IR 校验并降级：
+`panel` 槽的 `main`（`Panels/Todo.swift`）与 `settings.section` 槽的 `settings`
+（`Panels/Settings.swift`）都声明为 `render: "native"`，因此 `view_main` / `view_settings`
+返回的都是 **data**（`botchat.panel/1`）而不是 IR 树。两件事 MUST 同时成立，否则服务端会把
+data 当 IR 校验并降级：
 
-1. `view_main` 的返回值满足 `panel_data` 的形状（顶层对象、键名 ASCII、数组有上限）；
+1. 两个视图函数的返回值满足 `panel_data` / `settings_data` 的形状（顶层对象、键名 ASCII、
+   数组有上限）；
 2. 服务端动作链按清单的 `render` 选校验器（`ui_action._dispatch_action_impl`）。
 
+`settings` 不是「顺带改的」：样例清单是 IR 下线的**随仓样板**，留一条 IR 视图就等于给读者
+示范已废弃写法。
+
 动作参数从 `arguments` 进：原生面板的 `host.dispatch("add", ["title": …])` 在插件侧
-落到 `payload["arguments"]`，而 IR 的 `Field` 走 `values`。`_handle_node` 两个都读，
-是因为同一份动作语义要同时活在两种渲染体下（且设置页仍可能带 values）。
+落到 `payload["arguments"]`；`values` 是 IR 时代的上行形态，`_handle_node` 两个都读，
+因为动作载荷的两种形状由服务端路由决定，插件不该因为自己换了渲染体就少认一种。
 """
 
 from __future__ import annotations
@@ -47,6 +52,16 @@ from uuid import uuid4
 
 #: 数据文件（清单 `permissions.fs.read` / `permissions.fs.write` 必须与此同前缀）。
 DATA_PATH: Final[str] = "~/.botchat/todos/todos.json"
+
+#: 设置区面板的标题（标题是插件资产，不是通用 UI 文案，故随 data 下发）。
+SETTINGS_TITLE: Final[str] = "待办清单"
+
+#: 授权说明。内容是**本插件的**权限事实（清单请求了哪两个前缀、没授权时会怎样），
+#: 因此归服务端而不是面板源码。
+PERMISSION_HINT: Final[str] = (
+    "本插件需要 fs.read 与 fs.write 授权到 ~/.botchat/todos；"
+    "未授权时改动只活在进程内存里，宿主重启即丢。"
+)
 
 #: 单次返回最多多少条（data 序列化上限 256 KB；一条约 120 字节，200 条约 24 KB）。
 MAX_ROWS: Final[int] = 200
@@ -327,31 +342,22 @@ def panel_data(todos: list[TodoItem], *, notice: str | None = None) -> dict[str,
     }
 
 
-def render_settings(todos: list[TodoItem], *, notice: str | None = None) -> dict[str, object]:
-    """设置区内嵌视图：数据文件位置、计数、持久化状态（最小面，只读）。"""
+def settings_data(todos: list[TodoItem], *, notice: str | None = None) -> dict[str, object]:
+    """设置区面板的 data（`botchat.panel/1`）：文件位置 + 计数 + 授权说明 + 提示。
+
+    与 `panel_data` 同口径 —— **只给事实，文案归面板**：`title` / `dataPath` 是插件资产，
+    `counts` 给计数，`permissionHint` 是权限事实；按钮标题这类通用 UI 文案留在
+    `Panels/Settings.swift`。`notice` 空串 = 无提示（`PanelData` 只有一个读数，缺键与空值
+    收敛成同一形状，面板就不必写两套分支）。
+    """
     open_count, done_count = counts(todos)
-    children: list[dict[str, object]] = [
-        {"kind": "Heading", "text": "待办清单", "level": 2},
-        {"kind": "Text", "text": f"数据文件：{DATA_PATH}", "style": "mono", "tone": "fg.secondary"},
-        {"kind": "Text", "text": f"未完成 {open_count} 条 · 已完成 {done_count} 条"},
-    ]
-    if notice:
-        children.append({"kind": "Text", "text": notice, "tone": "status.warning.fg"})
-    children.append(
-        {
-            "kind": "Text",
-            "text": (
-                "本插件需要 fs.read 与 fs.write 授权到 ~/.botchat/todos；"
-                "未授权时改动只活在进程内存里，宿主重启即丢。"
-            ),
-            "tone": "status.muted.fg",
-            "style": "caption",
-        }
-    )
-    children.append(
-        {"kind": "Button", "nodeId": "refresh", "label": "重新读取文件", "style": "secondary"}
-    )
-    return {"kind": "Column", "spacing": 1, "children": children}
+    return {
+        "title": SETTINGS_TITLE,
+        "dataPath": DATA_PATH,
+        "counts": {"open": open_count, "done": done_count},
+        "notice": notice or "",
+        "permissionHint": PERMISSION_HINT,
+    }
 
 
 # —— IO 层：读一次缓存，写整份覆盖 ——
@@ -480,11 +486,14 @@ def view_main(payload: dict[str, object]) -> dict[str, object]:
 
 
 def view_settings(payload: dict[str, object]) -> dict[str, object]:
-    """`settings.section` 视图：只读一屏，交互仅支持手动重读。"""
+    """`settings.section` 视图（`render: native`）：只读一屏，交互仅支持手动重读。
+
+    唯一动作 `refresh` 与 `main` 那个同义：丢掉内存缓存重新读盘（面板自己不取数）。
+    """
     _ensure_loaded()
     if _as_text(payload.get("nodeId")) == "refresh":
         _reload()
-    return render_settings(_todos, notice=_notice)
+    return settings_data(_todos, notice=_notice)
 
 
 def command_open(_payload: dict[str, object]) -> dict[str, object]:

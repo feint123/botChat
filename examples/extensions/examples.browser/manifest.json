@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 2,
+  "id": "examples.browser",
+  "name": "浏览器（样例插件）",
+  "version": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "trust": "sandboxed",
+  "activationEvents": [
+    "onSlot:panel:main"
+  ],
+  "permissions": {},
+  "capabilities": {
+    "server.ui": {
+      "entry": "ui.py",
+      "views": [
+        "main"
+      ]
+    },
+    "client.panel": {
+      "views": [
+        {
+          "view": "main",
+          "entry": "Panels/Browser.swift",
+          "apiVersion": 1
+        }
+      ]
+    },
+    "client.view": [
+      {
+        "slot": "panel",
+        "view": "main",
+        "title": "浏览器",
+        "icon": "globe",
+        "priority": 30,
+        "render": "native"
+      }
+    ]
+  }
+}
